@@ -172,6 +172,7 @@ public class ClientEvents {
 		ScrollValueHandler.tick();
 		NetheriteBacktankFirstPersonRenderer.clientTick();
 		ContraptionPlayerPassengerRotation.tick();
+		
 		Create.KINETICS_MANAGER.tickClientNetworks(world);
 	}
 

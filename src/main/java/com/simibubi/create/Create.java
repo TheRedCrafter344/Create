@@ -78,13 +78,13 @@ public class Create {
 	public static final CreateRegistrate REGISTRATE = CreateRegistrate.create(ID)
 		.defaultCreativeTab((ResourceKey<CreativeModeTab>) null);
 
+/*
 	static {
 		REGISTRATE.setTooltipModifierFactory(item -> {
 			return new ItemDescription.Modifier(item, Palette.STANDARD_CREATE)
 				.andThen(TooltipModifier.mapNull(KineticStats.create(item)));
 		});
 	}
-
 */
 	public static final ServerSchematicLoader SCHEMATIC_RECEIVER = new ServerSchematicLoader();
 	public static final RedstoneLinkNetworkHandler REDSTONE_LINK_NETWORK_HANDLER = new RedstoneLinkNetworkHandler();
