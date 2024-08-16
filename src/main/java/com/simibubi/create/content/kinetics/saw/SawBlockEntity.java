@@ -264,7 +264,7 @@ public class SawBlockEntity extends BlockBreakingKineticBlockEntity {
 		super.invalidate();
 		invProvider.invalidate();
 	}
-	
+
 	@Override
 	public void destroy() {
 		super.destroy();
@@ -356,8 +356,8 @@ public class SawBlockEntity extends BlockBreakingKineticBlockEntity {
 				ItemHelper.addToList(stack, list);
 			}
 		}
-		
-		for (int slot = 0; slot < list.size() && slot + 1 < inventory.getSlots(); slot++) 
+
+		for (int slot = 0; slot < list.size() && slot + 1 < inventory.getSlots(); slot++)
 			inventory.setStackInSlot(slot + 1, list.get(slot));
 
 		award(AllAdvancements.SAW_PROCESSING);
@@ -466,7 +466,7 @@ public class SawBlockEntity extends BlockBreakingKineticBlockEntity {
 		}
 
 		super.onBlockBroken(stateToBreak);
-		TreeCutter.findTree(level, breakingPos)
+		TreeCutter.findTree(level, breakingPos, stateToBreak)
 			.destroyBlocks(level, null, this::dropItemFromCutTree);
 	}
 

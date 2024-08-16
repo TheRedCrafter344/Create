@@ -97,6 +97,8 @@ public class SchematicHandler implements IGuiOverlay {
 		if (activeSchematicItem != null && transformation != null)
 			transformation.tick();
 
+		renderers.forEach(SchematicRenderer::tick);
+
 		LocalPlayer player = mc.player;
 		ItemStack stack = findBlueprintInHand(player);
 		if (stack == null) {
@@ -117,7 +119,6 @@ public class SchematicHandler implements IGuiOverlay {
 		if (!active)
 			return;
 
-		renderers.forEach(SchematicRenderer::tick);
 		if (syncCooldown > 0)
 			syncCooldown--;
 		if (syncCooldown == 1)
@@ -161,9 +162,11 @@ public class SchematicHandler implements IGuiOverlay {
 		BlockPos pos;
 
 		pos = BlockPos.ZERO;
-		
+
 		try {
 			schematic.placeInWorld(w, pos, pos, placementSettings, w.getRandom(), Block.UPDATE_CLIENTS);
+			for (BlockEntity blockEntity : w.getBlockEntities())
+				blockEntity.setLevel(w);
 		} catch (Exception e) {
 			Minecraft.getInstance().player.displayClientMessage(Lang.translate("schematic.error")
 				.component(), false);
@@ -314,8 +317,12 @@ public class SchematicHandler implements IGuiOverlay {
 
 	private boolean itemLost(Player player) {
 		for (int i = 0; i < Inventory.getSelectionSize(); i++) {
+			if (player.getInventory()
+					.getItem(i)
+					.is(activeSchematicItem.getItem()))
+				continue;
 			if (!ItemStack.matches(player.getInventory()
-				.getItem(i), activeSchematicItem))
+					.getItem(i), activeSchematicItem))
 				continue;
 			return false;
 		}

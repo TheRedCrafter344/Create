@@ -146,20 +146,13 @@ public class BoilerData {
 		if (!isActive())
 			return false;
 
-		Component indent = Components.literal(IHaveGoggleInformation.spacing);
-		Component indent2 = Components.literal(IHaveGoggleInformation.spacing + " ");
-
 		calcMinMaxForSize(boilerSize);
 
-		tooltip.add(indent.plainCopy()
-			.append(
-				Lang.translateDirect("boiler.status", getHeatLevelTextComponent().withStyle(ChatFormatting.GREEN))));
-		tooltip.add(indent2.plainCopy()
-			.append(getSizeComponent(true, false)));
-		tooltip.add(indent2.plainCopy()
-			.append(getWaterComponent(true, false)));
-		tooltip.add(indent2.plainCopy()
-			.append(getHeatComponent(true, false)));
+		Lang.translate("boiler.status", getHeatLevelTextComponent().withStyle(ChatFormatting.GREEN))
+						.forGoggles(tooltip);
+		Lang.builder().add(getSizeComponent(true, false)).forGoggles(tooltip, 1);
+		Lang.builder().add(getWaterComponent(true, false)).forGoggles(tooltip, 1);
+		Lang.builder().add(getHeatComponent(true, false)).forGoggles(tooltip, 1);
 
 		if (attachedEngines == 0)
 			return true;

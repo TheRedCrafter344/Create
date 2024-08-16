@@ -297,6 +297,7 @@ public class CKinetics extends ConfigBase {
 	public final ConfigBool harvesterReplants = b(true, "harvesterReplants", Comments.harvesterReplants);
 	public final ConfigBool minecartContraptionInContainers =
 		b(false, "minecartContraptionInContainers", Comments.minecartContraptionInContainers);
+	public final ConfigBool stabiliseStableContraptions = b(false, "stabiliseStableContraptions", Comments.stabiliseStableContraptions, "[Technical]");
 
 	public final ConfigGroup stats = group(1, "stats", Comments.stats);
 	public final ConfigFloat mediumSpeed = f(30, 0, 4096, "mediumSpeed", Comments.rpm, Comments.mediumSpeed);
@@ -366,6 +367,7 @@ public class CKinetics extends ConfigBase {
 		static String obsidianMovement = "Configure how Obsidian blocks can be moved by contraptions.";
 		static String reinforcedDeepslateMovement = "Configure how Reinforced Deepslate blocks can be moved by contraptions.";
 		static String minecartContraptionInContainers = "Whether minecart contraptions can be placed into container items.";
+		static String stabiliseStableContraptions = "Whether stabilised bearings create a separated entity even on non-rotating contraptions.";
 		static String crankPower = "Maximum power, in EU/s, a handcrank applies to a network. That much power is removed instead if the rotation direction is opposite to the crank's";
 	}
 

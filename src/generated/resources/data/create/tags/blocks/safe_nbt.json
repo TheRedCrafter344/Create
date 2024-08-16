@@ -25,6 +25,6 @@
     "create:clipboard",
     "create:creative_motor",
     "#minecraft:banners",
-    "#minecraft:signs"
+    "#minecraft:all_signs"
   ]
 }
