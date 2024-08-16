@@ -37,18 +37,18 @@ public class CreativeMotorValueBehaviour extends ScrollValueBehaviour {
 	public void setValueSettings(Player player, ValueSettings valueSetting, boolean ctrlHeld) {
 		if (!valueSetting.equals(getValueSettings()))
 			playFeedbackSound(this);
-		setValue(valueSetting.row() * 256 + valueSetting.value());
+		setValue(valueSetting.row() * 257 + valueSetting.value());
 	}
 
 	@Override
 	public ValueSettings getValueSettings() {
-		return new ValueSettings(value / 256, value % 256);
+		return new ValueSettings(value / 257, value % 257);
 	}
 
 	public MutableComponent formatSettings(ValueSettings settings) {
 		switch(settings.row()) {
 		case 0:
-			return Lang.number(0.2 * (settings.value() - 128)).add(Lang.text(" kFE/s")).component();
+			return Lang.number(0.2 * (settings.value() - 128)).add(Lang.text(" kEU/s")).component();
 		case 1:
 			return Lang.number(10 * (settings.value() - 128)).add(Lang.text(" TU")).component();
 		case 2:
@@ -58,12 +58,12 @@ public class CreativeMotorValueBehaviour extends ScrollValueBehaviour {
 	}
 	
 	private static String formatter(int value) {
-		if(0 <= value && value < 256) {
-			return 0.2 * (value - 128) + "kFE/s";
-		} else if(256 <= value && value < 512) {
-			return 10 * (value - 384) + "TU";
-		} else if(512 <= value && value < 768) {
-			return 2 * (value - 640) + "rpm";
+		if(0 <= value && value < 257) {
+			return 0.2 * (value - 128) + "kEU/s";
+		} else if(257 <= value && value < 514) {
+			return 10 * (value - 385) + "TU";
+		} else if(514 <= value && value < 771) {
+			return 2 * (value - 642) + "rpm";
 		}
 		return "?";
 	}
