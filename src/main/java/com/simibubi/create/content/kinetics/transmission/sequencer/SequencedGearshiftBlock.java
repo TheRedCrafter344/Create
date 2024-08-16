@@ -4,6 +4,7 @@ import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.content.contraptions.ITransformableBlock;
 import com.simibubi.create.content.contraptions.StructureTransform;
+import com.simibubi.create.content.kinetics.base.DirectionalKineticBlock;
 import com.simibubi.create.content.kinetics.base.HorizontalAxisKineticBlock;
 import com.simibubi.create.content.kinetics.base.KineticBlock;
 import com.simibubi.create.content.kinetics.base.RotatedPillarKineticBlock;
@@ -37,9 +38,8 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.DistExecutor;
 
-public class SequencedGearshiftBlock extends HorizontalAxisKineticBlock implements IBE<SequencedGearshiftBlockEntity>, ITransformableBlock {
+public class SequencedGearshiftBlock extends DirectionalKineticBlock implements IBE<SequencedGearshiftBlockEntity>, ITransformableBlock {
 
-	public static final BooleanProperty VERTICAL = BooleanProperty.create("vertical");
 	public static final IntegerProperty STATE = IntegerProperty.create("state", 0, 5);
 
 	public SequencedGearshiftBlock(Properties properties) {
@@ -48,7 +48,7 @@ public class SequencedGearshiftBlock extends HorizontalAxisKineticBlock implemen
 
 	@Override
 	protected void createBlockStateDefinition(Builder<Block, BlockState> builder) {
-		super.createBlockStateDefinition(builder.add(STATE, VERTICAL));
+		super.createBlockStateDefinition(builder.add(STATE));
 	}
 
 	@Override
@@ -79,14 +79,6 @@ public class SequencedGearshiftBlock extends HorizontalAxisKineticBlock implemen
 	}
 
 	@Override
-	public boolean hasShaftTowards(LevelReader world, BlockPos pos, BlockState state, Direction face) {
-		if (state.getValue(VERTICAL))
-			return face.getAxis()
-				.isVertical();
-		return super.hasShaftTowards(world, pos, state, face);
-	}
-
-	@Override
 	public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand handIn,
 		BlockHitResult hit) {
 		ItemStack held = player.getMainHandItem();
@@ -110,41 +102,8 @@ public class SequencedGearshiftBlock extends HorizontalAxisKineticBlock implemen
 	}
 
 	@Override
-	public BlockState getStateForPlacement(BlockPlaceContext context) {
-		Axis preferredAxis = RotatedPillarKineticBlock.getPreferredAxis(context);
-		if (preferredAxis != null && (context.getPlayer() == null || !context.getPlayer()
-			.isShiftKeyDown()))
-			return withAxis(preferredAxis, context);
-		return withAxis(context.getNearestLookingDirection()
-			.getAxis(), context);
-	}
-
-	@Override
-	public InteractionResult onWrenched(BlockState state, UseOnContext context) {
-		BlockState newState = state;
-
-		if (context.getClickedFace()
-			.getAxis() != Axis.Y)
-			if (newState.getValue(HORIZONTAL_AXIS) != context.getClickedFace()
-				.getAxis())
-				newState = newState.cycle(VERTICAL);
-
-		return super.onWrenched(newState, context);
-	}
-
-	private BlockState withAxis(Axis axis, BlockPlaceContext context) {
-		BlockState state = defaultBlockState().setValue(VERTICAL, axis.isVertical());
-		if (axis.isVertical())
-			return state.setValue(HORIZONTAL_AXIS, context.getHorizontalDirection()
-				.getAxis());
-		return state.setValue(HORIZONTAL_AXIS, axis);
-	}
-
-	@Override
 	public Axis getRotationAxis(BlockState state) {
-		if (state.getValue(VERTICAL))
-			return Axis.Y;
-		return super.getRotationAxis(state);
+		return state.getValue(DirectionalKineticBlock.FACING).getAxis();
 	}
 
 	@Override
@@ -173,19 +132,11 @@ public class SequencedGearshiftBlock extends HorizontalAxisKineticBlock implemen
 		if (transform.mirror != null) {
 			state = mirror(state, transform.mirror);
 		}
-
-		if (transform.rotationAxis == Direction.Axis.Y) {
-			return rotate(state, transform.rotation);
-		}
-
-		if (transform.rotation.ordinal() % 2 == 1) {
-			if (transform.rotationAxis != state.getValue(HORIZONTAL_AXIS)) {
-				return state.cycle(VERTICAL);
-			} else if (state.getValue(VERTICAL)) {
-				return state.cycle(VERTICAL).cycle(HORIZONTAL_AXIS);
-			}
-		}
-		return state;
+		return rotate(state, transform.rotation);
 	}
-
+	
+	@Override
+	public boolean hasShaftTowards(LevelReader world, BlockPos pos, BlockState state, Direction face) {
+		return face.getAxis() == state.getValue(FACING).getAxis();
+	}
 }

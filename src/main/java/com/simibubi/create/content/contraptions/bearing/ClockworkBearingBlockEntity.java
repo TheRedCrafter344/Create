@@ -78,7 +78,7 @@ public class ClockworkBearingBlockEntity extends KineticBlockEntity
 			assembleNextTick = false;
 			if (running) {
 				boolean canDisassemble = true;
-				if (speed == 0 && (canDisassemble || hourHand == null || hourHand.getContraption()
+				if (getSpeed() == 0 && (canDisassemble || hourHand == null || hourHand.getContraption()
 					.getBlocks()
 					.isEmpty())) {
 					if (hourHand != null)

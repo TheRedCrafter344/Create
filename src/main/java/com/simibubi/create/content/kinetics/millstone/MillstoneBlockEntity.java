@@ -12,6 +12,7 @@ import com.simibubi.create.foundation.item.ItemHelper;
 import com.simibubi.create.foundation.sound.SoundScapes;
 import com.simibubi.create.foundation.sound.SoundScapes.AmbienceGroup;
 import com.simibubi.create.foundation.utility.VecHelper;
+import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -49,6 +50,11 @@ public class MillstoneBlockEntity extends KineticBlockEntity {
 		capability = LazyOptional.of(MillstoneInventoryHandler::new);
 	}
 
+	@Override
+	public float getTorque(float speed) {
+		return super.getTorque(speed) + (inputInv.getStackInSlot(0).isEmpty() ? 0 : AllConfigs.server().kinetics.millstoneTorque.getF()) * -Math.signum(speed);
+	}
+	
 	@Override
 	public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
 		behaviours.add(new DirectBeltInputBehaviour(this));

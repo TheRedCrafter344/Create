@@ -241,10 +241,12 @@ public class BeltConnectorItem extends BlockItem {
 		if (!(blockEntity2 instanceof KineticBlockEntity))
 			return false;
 
+		/*
 		float speed1 = ((KineticBlockEntity) blockEntity).getTheoreticalSpeed();
 		float speed2 = ((KineticBlockEntity) blockEntity2).getTheoreticalSpeed();
 		if (Math.signum(speed1) != Math.signum(speed2) && speed1 != 0 && speed2 != 0)
 			return false;
+*/
 
 		BlockPos step = BlockPos.containing(Math.signum(diff.getX()), Math.signum(diff.getY()), Math.signum(diff.getZ()));
 		int limit = 1000;

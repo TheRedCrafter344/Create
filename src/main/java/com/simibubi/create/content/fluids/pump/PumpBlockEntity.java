@@ -41,6 +41,8 @@ public class PumpBlockEntity extends KineticBlockEntity {
 
 	Couple<MutableBoolean> sidesToUpdate;
 	boolean pressureUpdate;
+	
+	int lastPressureUpdate = 0;
 
 	// Backcompat- flips any pump blockstate that loads with reversed=true
 	boolean scheduleFlip;
@@ -78,6 +80,8 @@ public class PumpBlockEntity extends KineticBlockEntity {
 			update.setFalse();
 			distributePressureTo(isFront ? getFront() : getFront().getOpposite());
 		});
+		
+		if(lastPressureUpdate > 0) lastPressureUpdate--;
 	}
 
 	@Override
@@ -86,11 +90,12 @@ public class PumpBlockEntity extends KineticBlockEntity {
 
 		if (Math.abs(previousSpeed) == Math.abs(getSpeed()))
 			return;
-		if (speed != 0)
+		if (getSpeed() != 0)
 			award(AllAdvancements.PUMP);
 		if (level.isClientSide && !isVirtual())
 			return;
-
+		if(lastPressureUpdate > 0) return;
+		lastPressureUpdate = 20;
 		updatePressureChange();
 	}
 

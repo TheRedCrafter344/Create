@@ -6,9 +6,7 @@ import com.simibubi.create.compat.computercraft.implementation.peripherals.Seque
 import com.simibubi.create.compat.computercraft.implementation.peripherals.SpeedControllerPeripheral;
 import com.simibubi.create.compat.computercraft.implementation.peripherals.SpeedGaugePeripheral;
 import com.simibubi.create.compat.computercraft.implementation.peripherals.StationPeripheral;
-import com.simibubi.create.compat.computercraft.implementation.peripherals.StressGaugePeripheral;
 import com.simibubi.create.content.kinetics.gauge.SpeedGaugeBlockEntity;
-import com.simibubi.create.content.kinetics.gauge.StressGaugeBlockEntity;
 import com.simibubi.create.content.kinetics.speedController.SpeedControllerBlockEntity;
 import com.simibubi.create.content.kinetics.transmission.sequencer.SequencedGearshiftBlockEntity;
 import com.simibubi.create.content.redstone.displayLink.DisplayLinkBlockEntity;
@@ -45,8 +43,8 @@ public class ComputerBehaviour extends AbstractComputerBehaviour {
 			return () -> new SequencedGearshiftPeripheral(sgbe);
 		if (be instanceof SpeedGaugeBlockEntity sgbe)
 			return () -> new SpeedGaugePeripheral(sgbe);
-		if (be instanceof StressGaugeBlockEntity sgbe)
-			return () -> new StressGaugePeripheral(sgbe);
+		//if (be instanceof StressGaugeBlockEntity sgbe)
+		//	return () -> new StressGaugePeripheral(sgbe);
 		if (be instanceof StationBlockEntity sbe)
 			return () -> new StationPeripheral(sbe);
 

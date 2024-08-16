@@ -15,6 +15,7 @@ import com.simibubi.create.foundation.utility.AngleHelper;
 import com.simibubi.create.foundation.utility.Iterate;
 import com.simibubi.create.foundation.utility.Pointing;
 import com.simibubi.create.foundation.utility.VecHelper;
+import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -287,5 +288,5 @@ public class MechanicalCrafterBlock extends HorizontalKineticBlock
 	public BlockEntityType<? extends MechanicalCrafterBlockEntity> getBlockEntityType() {
 		return AllBlockEntityTypes.MECHANICAL_CRAFTER.get();
 	}
-
+	
 }

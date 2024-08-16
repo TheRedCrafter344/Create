@@ -26,7 +26,7 @@ public class DisplayBoardTarget extends DisplayTarget {
 		FlapDisplayBlockEntity controller = getController(context);
 		if (controller == null)
 			return;
-		if (!controller.isSpeedRequirementFulfilled())
+		if (!controller.isRunning)
 			return;
 
 		DisplaySource source = context.blockEntity().activeSource;

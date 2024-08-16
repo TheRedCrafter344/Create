@@ -126,8 +126,4 @@ public class WaterWheelBlock extends DirectionalKineticBlock implements IBE<Wate
 		return AllBlockEntityTypes.WATER_WHEEL.get();
 	}
 
-	public static Couple<Integer> getSpeedRange() {
-		return Couple.create(8, 8);
-	}
-
 }

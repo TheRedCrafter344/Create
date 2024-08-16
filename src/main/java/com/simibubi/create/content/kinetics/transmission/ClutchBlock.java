@@ -22,8 +22,8 @@ public class ClutchBlock extends GearshiftBlock {
 
 		boolean previouslyPowered = state.getValue(POWERED);
 		if (previouslyPowered != worldIn.hasNeighborSignal(pos)) {
-			worldIn.setBlock(pos, state.cycle(POWERED), 2 | 16);
 			detachKinetics(worldIn, pos, previouslyPowered);
+			worldIn.setBlock(pos, state.cycle(POWERED), 2 | 16);
 		}
 	}
 	

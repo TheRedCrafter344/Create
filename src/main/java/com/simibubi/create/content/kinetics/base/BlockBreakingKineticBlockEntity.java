@@ -30,6 +30,16 @@ public abstract class BlockBreakingKineticBlockEntity extends KineticBlockEntity
 	}
 
 	@Override
+	public float getTorque(float speed) {
+		if(breakingPos == null) return super.getTorque(speed);
+		BlockState stateToBreak = level.getBlockState(breakingPos);
+		float blockHardness = stateToBreak.getDestroySpeed(level, breakingPos);
+		return super.getTorque(speed) + (canBreak(stateToBreak, blockHardness) ? getBreakingTorque() : 0) * -Math.signum(speed);
+	}
+	
+	public abstract float getBreakingTorque();
+	
+	@Override
 	public void onSpeedChanged(float prevSpeed) {
 		super.onSpeedChanged(prevSpeed);
 		if (destroyProgress == -1)

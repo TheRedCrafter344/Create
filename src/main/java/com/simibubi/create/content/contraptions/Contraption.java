@@ -897,8 +897,8 @@ public abstract class Contraption {
 				return;
 			be.setLevel(world);
 			modelData.put(info.pos(), be.getModelData());
-			if (be instanceof KineticBlockEntity kbe)
-				kbe.setSpeed(0);
+			//if (be instanceof KineticBlockEntity kbe)
+			//	kbe.setSpeed(0);
 			be.getBlockState();
 
 			MovementBehaviour movementBehaviour = AllMovementBehaviours.getBehaviour(info.state());

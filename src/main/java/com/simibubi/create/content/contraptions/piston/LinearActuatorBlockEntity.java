@@ -205,8 +205,8 @@ public abstract class LinearActuatorBlockEntity extends KineticBlockEntity
 				.stop(level);
 		}
 
-		if (sequenceContext != null && sequenceContext.instruction() == SequencerInstructions.TURN_DISTANCE)
-			sequencedOffsetLimit = sequenceContext.getEffectiveValue(getTheoreticalSpeed());
+		//if (sequenceContext != null && sequenceContext.instruction() == SequencerInstructions.TURN_DISTANCE)
+		//	sequencedOffsetLimit = sequenceContext.getEffectiveValue(getTheoreticalSpeed());
 	}
 
 	@Override

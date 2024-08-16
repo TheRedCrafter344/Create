@@ -1,7 +1,7 @@
 {
   "values": [
-    "create:nozzle",
     "create:hand_crank",
+    "create:nozzle",
     "create:copper_valve_handle",
     "create:white_valve_handle",
     "create:orange_valve_handle",

@@ -14,11 +14,28 @@ public class GearshiftBlockEntity extends SplitShaftBlockEntity {
 
 	@Override
 	public float getRotationSpeedModifier(Direction face) {
-		if (hasSource()) {
-			if (face != getSourceFacing() && getBlockState().getValue(BlockStateProperties.POWERED))
-				return -1;
+		float powered = getBlockState().getValue(BlockStateProperties.POWERED) ? -1 : 1;
+		switch(getBlockState().getValue(BlockStateProperties.AXIS)) {
+		case X:
+			switch(face) {
+			case EAST: return 1;
+			case WEST: return powered;
+			default: return 0;
+			}
+		case Y:
+			switch(face) {
+			case DOWN: return 1;
+			case UP: return powered;
+			default: return 0;
+			}
+		case Z:
+			switch(face) {
+			case NORTH: return 1;
+			case SOUTH: return powered;
+			default: return 0;
+			}
 		}
-		return 1;
+		return 0;
 	}
 	
 }

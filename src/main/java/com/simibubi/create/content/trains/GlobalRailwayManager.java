@@ -16,7 +16,6 @@ import org.apache.commons.lang3.mutable.MutableObject;
 
 import com.simibubi.create.AllPackets;
 import com.simibubi.create.CreateClient;
-import com.simibubi.create.content.kinetics.KineticDebugger;
 import com.simibubi.create.content.trains.display.GlobalTrainDisplayData;
 import com.simibubi.create.content.trains.entity.Train;
 import com.simibubi.create.content.trains.entity.TrainPacket;
@@ -27,6 +26,7 @@ import com.simibubi.create.content.trains.graph.TrackNodeLocation;
 import com.simibubi.create.content.trains.signal.SignalEdgeGroup;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -272,7 +272,7 @@ public class GlobalRailwayManager {
 	}
 
 	private static boolean isTrackGraphDebugActive() {
-		return KineticDebugger.isF3DebugModeActive() && AllConfigs.client().showTrackGraphOnF3.get();
+		return Minecraft.getInstance().options.renderDebug && AllConfigs.client().showTrackGraphOnF3.get();
 	}
 
 	private static boolean isTrackGraphDebugExtended() {

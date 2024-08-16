@@ -103,7 +103,7 @@ public class PulleyBlockEntity extends LinearActuatorBlockEntity implements Thre
 		if (!(level.getBlockState(worldPosition)
 			.getBlock() instanceof PulleyBlock))
 			return;
-		if (speed == 0 && mirrorParent == null)
+		if (getSpeed() == 0 && mirrorParent == null)
 			return;
 		int maxLength = AllConfigs.server().kinetics.maxRopeLength.get();
 		int i = 1;

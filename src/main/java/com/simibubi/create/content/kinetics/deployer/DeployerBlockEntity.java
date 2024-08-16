@@ -15,7 +15,6 @@ import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.content.equipment.sandPaper.SandPaperItem;
 import com.simibubi.create.content.equipment.sandPaper.SandPaperPolishingRecipe.SandPaperInv;
-import com.simibubi.create.content.kinetics.base.IRotate.StressImpact;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.content.kinetics.belt.behaviour.BeltProcessingBehaviour;
 import com.simibubi.create.content.kinetics.belt.behaviour.TransportedItemStackHandlerBehaviour;
@@ -29,6 +28,7 @@ import com.simibubi.create.foundation.utility.Lang;
 import com.simibubi.create.foundation.utility.NBTHelper;
 import com.simibubi.create.foundation.utility.VecHelper;
 import com.simibubi.create.foundation.utility.animation.LerpedFloat;
+import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -102,6 +102,11 @@ public class DeployerBlockEntity extends KineticBlockEntity {
 			.startWithValue(0);
 	}
 
+	@Override
+	public float getTorque(float speed) {
+		return super.getTorque(speed) + (state == State.WAITING ? 0 : AllConfigs.server().kinetics.deployerTorque.getF()) * -Math.signum(speed);
+	}
+	
 	@Override
 	public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
 		super.addBehaviours(behaviours);
@@ -473,6 +478,7 @@ public class DeployerBlockEntity extends KineticBlockEntity {
 		return super.getCapability(cap, side);
 	}
 
+	
 	@Override
 	public boolean addToTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
 		if (super.addToTooltip(tooltip, isPlayerSneaking))
@@ -484,6 +490,7 @@ public class DeployerBlockEntity extends KineticBlockEntity {
 		TooltipHelper.addHint(tooltip, "hint.full_deployer");
 		return true;
 	}
+
 
 	@Override
 	public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
@@ -499,12 +506,6 @@ public class DeployerBlockEntity extends KineticBlockEntity {
 				.getString(), heldItem.getCount())
 				.style(ChatFormatting.GREEN)
 				.forGoggles(tooltip);
-
-		float stressAtBase = calculateStressApplied();
-		if (StressImpact.isEnabled() && !Mth.equal(stressAtBase, 0)) {
-			tooltip.add(Components.immutableEmpty());
-			addStressImpactStats(tooltip, stressAtBase);
-		}
 
 		return true;
 	}

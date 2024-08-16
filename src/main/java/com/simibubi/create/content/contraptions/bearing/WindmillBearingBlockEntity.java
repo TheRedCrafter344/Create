@@ -28,13 +28,6 @@ public class WindmillBearingBlockEntity extends MechanicalBearingBlockEntity {
 	}
 
 	@Override
-	public void updateGeneratedRotation() {
-		super.updateGeneratedRotation();
-		lastGeneratedSpeed = getGeneratedSpeed();
-		queuedReassembly = false;
-	}
-
-	@Override
 	public void onSpeedChanged(float prevSpeed) {
 		boolean cancelAssembly = assembleNextTick;
 		super.onSpeedChanged(prevSpeed);
@@ -60,7 +53,6 @@ public class WindmillBearingBlockEntity extends MechanicalBearingBlockEntity {
 		queuedReassembly = true;
 	}
 
-	@Override
 	public float getGeneratedSpeed() {
 		if (!running)
 			return 0;
@@ -70,13 +62,43 @@ public class WindmillBearingBlockEntity extends MechanicalBearingBlockEntity {
 			/ AllConfigs.server().kinetics.windmillSailsPerRPM.get();
 		return Mth.clamp(sails, 1, 16) * getAngleSpeedDirection();
 	}
+	
+	private static final float GENERATED_POWER = 100f; // EU/s (PU)
+	private static final float MAX_REMOVED_POWER = -100f;
+	private static final float POWER_LOSS_AT = 0.8f; // sail rpm / target rpm point where power loss starts. power generated will be 0 when that ratio is 1.
+	
+	@Override
+	public boolean shouldCreateNetwork() {
+		return true;
+	}
+	
+	@Override
+	public float getTorque(float speed) {
+		int sails = ((BearingContraption) movedContraption.getContraption()).getSailBlocks();
+		if(sails == 0) return super.getTorque(speed);
+		float targetRPM = Math.min(sails, 64) * 2;
+		float generatedPower = GENERATED_POWER * sails;
+		float powerLossAt = targetRPM * Mth.clamp(POWER_LOSS_AT, 0, 0.9f);
+		float power;
+		speed = speed > 0 ? Math.max(speed, 1)
+				  		  : Math.min(-speed, -1);
+		if(speed * targetRPM < 0) {
+			power = MAX_REMOVED_POWER;
+		} else if(Math.abs(speed) < Math.abs(powerLossAt)) {
+			power = generatedPower;
+		} else {
+			float slope = generatedPower / (targetRPM - powerLossAt);
+			power = Math.max(generatedPower - slope * (speed - powerLossAt), MAX_REMOVED_POWER);
+		}
+		return power / speed + super.getTorque(speed);
+	}
 
 	@Override
 	protected boolean isWindmill() {
 		return true;
 	}
 
-	protected float getAngleSpeedDirection() {
+	protected int getAngleSpeedDirection() {
 		RotationDirection rotationDirection = RotationDirection.values()[movementDirection.getValue()];
 		return (rotationDirection == RotationDirection.CLOCKWISE ? 1 : -1);
 	}
@@ -102,16 +124,8 @@ public class WindmillBearingBlockEntity extends MechanicalBearingBlockEntity {
 		behaviours.remove(movementMode);
 		movementDirection = new ScrollOptionBehaviour<>(RotationDirection.class,
 			Lang.translateDirect("contraptions.windmill.rotation_direction"), this, getMovementModeSlot());
-		movementDirection.withCallback($ -> onDirectionChanged());
 		behaviours.add(movementDirection);
 		registerAwardables(behaviours, AllAdvancements.WINDMILL, AllAdvancements.WINDMILL_MAXED);
-	}
-
-	private void onDirectionChanged() {
-		if (!running)
-			return;
-		if (!level.isClientSide)
-			updateGeneratedRotation();
 	}
 
 	@Override

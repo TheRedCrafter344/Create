@@ -41,17 +41,8 @@ public class EncasedFanRenderer extends KineticBlockEntityRenderer<EncasedFanBlo
 		SuperByteBuffer fanInner =
 				CachedBufferer.partialFacing(AllPartialModels.ENCASED_FAN_INNER, be.getBlockState(), direction.getOpposite());
 
-		float time = AnimationTickHolder.getRenderTime(be.getLevel());
-		float speed = be.getSpeed() * 5;
-		if (speed > 0)
-			speed = Mth.clamp(speed, 80, 64 * 20);
-		if (speed < 0)
-			speed = Mth.clamp(speed, -64 * 20, -80);
-		float angle = (time * speed * 3 / 10f) % 360;
-		angle = angle / 180f * (float) Math.PI;
-
 		standardKineticRotationTransform(shaftHalf, be, lightBehind).renderInto(ms, vb);
-		kineticRotationTransform(fanInner, be, direction.getAxis(), angle, lightInFront).renderInto(ms, vb);
+		kineticRotationTransform(fanInner, be, direction.getAxis(), be.getRenderAngle(AnimationTickHolder.getPartialTicks(be.getLevel())) * 5, lightInFront).renderInto(ms, vb);
 	}
 
 }

@@ -100,6 +100,7 @@ public class CommonEvents {
 		LinkedControllerServerHandler.tick(world);
 		ControlsServerHandler.tick(world);
 		Create.RAILWAYS.tick(world);
+		Create.KINETICS_MANAGER.tickNetworks(world); //cum
 	}
 
 	@SubscribeEvent
@@ -160,7 +161,7 @@ public class CommonEvents {
 	public static void onLoadWorld(LevelEvent.Load event) {
 		LevelAccessor world = event.getLevel();
 		Create.REDSTONE_LINK_NETWORK_HANDLER.onLoadWorld(world);
-		Create.TORQUE_PROPAGATOR.onLoadWorld(world);
+		Create.KINETICS_MANAGER.onLoadWorld(world);
 		Create.RAILWAYS.levelLoaded(world);
 	}
 
@@ -168,7 +169,7 @@ public class CommonEvents {
 	public static void onUnloadWorld(LevelEvent.Unload event) {
 		LevelAccessor world = event.getLevel();
 		Create.REDSTONE_LINK_NETWORK_HANDLER.onUnloadWorld(world);
-		Create.TORQUE_PROPAGATOR.onUnloadWorld(world);
+		Create.KINETICS_MANAGER.onUnloadWorld(world); 
 		WorldAttached.invalidateWorld(world);
 	}
 

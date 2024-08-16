@@ -4,6 +4,7 @@ import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllShapes;
 import com.simibubi.create.content.kinetics.base.HorizontalKineticBlock;
 import com.simibubi.create.foundation.block.IBE;
+import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -78,5 +79,5 @@ public class CuckooClockBlock extends HorizontalKineticBlock implements IBE<Cuck
 	public BlockEntityType<? extends CuckooClockBlockEntity> getBlockEntityType() {
 		return AllBlockEntityTypes.CUCKOO_CLOCK.get();
 	}
-
+	
 }

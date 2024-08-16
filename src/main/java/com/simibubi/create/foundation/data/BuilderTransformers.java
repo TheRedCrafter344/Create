@@ -29,7 +29,6 @@ import com.simibubi.create.content.decoration.encasing.CasingBlock;
 import com.simibubi.create.content.decoration.encasing.EncasedCTBehaviour;
 import com.simibubi.create.content.decoration.slidingDoor.SlidingDoorBlock;
 import com.simibubi.create.content.decoration.slidingDoor.SlidingDoorMovementBehaviour;
-import com.simibubi.create.content.kinetics.BlockStressDefaults;
 import com.simibubi.create.content.kinetics.base.RotatedPillarKineticBlock;
 import com.simibubi.create.content.kinetics.crank.ValveHandleBlock;
 import com.simibubi.create.content.kinetics.simpleRelays.encased.EncasedCogCTBehaviour;
@@ -211,7 +210,7 @@ public class BuilderTransformers {
 		Supplier<ItemLike> drop) {
 		return b.initialProperties(SharedProperties::stone)
 			.properties(BlockBehaviour.Properties::noOcclusion)
-			.transform(BlockStressDefaults.setNoImpact())
+			//.transform(BlockStressDefaults.setNoImpact())
 			.loot((p, lb) -> p.dropOther(lb, drop.get()));
 	}
 
@@ -220,7 +219,7 @@ public class BuilderTransformers {
 			.blockstate((c, p) -> p.horizontalBlock(c.get(), p.models()
 				.getExistingFile(p.modLoc("block/cuckoo_clock/block"))))
 			.addLayer(() -> RenderType::cutoutMipped)
-			.transform(BlockStressDefaults.setImpact(1.0))
+			//.transform(BlockStressDefaults.setImpact(1.0))
 			.item()
 			.transform(ModelGen.customItemModel("cuckoo_clock", "item"));
 	}
@@ -284,7 +283,7 @@ public class BuilderTransformers {
 					.texture("3", p.modLoc("block/valve_handle/valve_handle_" + variant)));
 			})
 			.tag(AllBlockTags.BRITTLE.tag, AllBlockTags.VALVE_HANDLES.tag)
-			.transform(BlockStressDefaults.setGeneratorSpeed(ValveHandleBlock::getSpeedRange))
+			//.transform(BlockStressDefaults.setGeneratorSpeed(ValveHandleBlock::getSpeedRange))
 			.onRegister(ItemUseOverrides::addBlock)
 			.item()
 			.tag(AllItemTags.VALVE_HANDLES.tag)
@@ -365,7 +364,7 @@ public class BuilderTransformers {
 			.properties(p -> p.noOcclusion())
 			.blockstate(new MechanicalPistonGenerator(type)::generate)
 			.addLayer(() -> RenderType::cutoutMipped)
-			.transform(BlockStressDefaults.setImpact(4.0))
+			//.transform(BlockStressDefaults.setImpact(4.0))
 			.item()
 			.transform(ModelGen.customItemModel("mechanical_piston", type.getSerializedName(), "item"));
 	}
@@ -426,7 +425,7 @@ public class BuilderTransformers {
 		return b -> b.blockstate((c, p) -> p.horizontalBlock(c.getEntry(), AssetLookup.partialBaseModel(c, p)))
 			.transform(pickaxeOnly())
 			.addLayer(() -> RenderType::cutoutMipped)
-			.transform(BlockStressDefaults.setImpact(4.0))
+			//.transform(BlockStressDefaults.setImpact(4.0))
 			.loot((lt, block) -> {
 				Builder builder = LootTable.lootTable();
 				LootItemCondition.Builder survivesExplosion = ExplosionCondition.survivesExplosion();

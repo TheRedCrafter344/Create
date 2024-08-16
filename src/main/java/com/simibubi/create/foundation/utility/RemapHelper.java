@@ -21,7 +21,6 @@ import static com.simibubi.create.AllBlocks.REDSTONE_LINK;
 import static com.simibubi.create.AllBlocks.SECONDARY_LINEAR_CHASSIS;
 import static com.simibubi.create.AllBlocks.SMART_OBSERVER;
 import static com.simibubi.create.AllBlocks.SPEEDOMETER;
-import static com.simibubi.create.AllBlocks.STRESSOMETER;
 import static com.simibubi.create.AllBlocks.THRESHOLD_SWITCH;
 import static com.simibubi.create.AllItems.ATTRIBUTE_FILTER;
 import static com.simibubi.create.AllItems.COPPER_DIVING_BOOTS;
@@ -87,7 +86,7 @@ public class RemapHelper {
 		reMap.put("entity_detector", SMART_OBSERVER.getId());
 		reMap.put("saw", MECHANICAL_SAW.getId());
 		reMap.put("flexpulsepeater", PULSE_REPEATER.getId());
-		reMap.put("stress_gauge", STRESSOMETER.getId());
+		//reMap.put("stress_gauge", STRESSOMETER.getId());
 		reMap.put("harvester", MECHANICAL_HARVESTER.getId());
 		reMap.put("plough", MECHANICAL_PLOUGH.getId());
 		reMap.put("drill", MECHANICAL_DRILL.getId());

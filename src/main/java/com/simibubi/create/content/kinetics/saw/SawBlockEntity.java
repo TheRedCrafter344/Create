@@ -94,6 +94,11 @@ public class SawBlockEntity extends BlockBreakingKineticBlockEntity {
 	}
 
 	@Override
+	public float getTorque(float speed) {
+		return super.getTorque(speed) + (inventory.remainingTime > 0 ? AllConfigs.server().kinetics.sawProcessingTorque.getF() * -Math.signum(speed) : 0);
+	}
+	
+	@Override
 	public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
 		super.addBehaviours(behaviours);
 		filtering = new FilteringBehaviour(this, new SawFilterSlot()).forRecipes();
@@ -505,6 +510,11 @@ public class SawBlockEntity extends BlockBreakingKineticBlockEntity {
 		if (TreeCutter.canDynamicTreeCutFrom(block))
 			return true;
 		return false;
+	}
+
+	@Override
+	public float getBreakingTorque() {
+		return AllConfigs.server().kinetics.sawTorque.getF();
 	}
 
 }

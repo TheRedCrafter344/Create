@@ -22,7 +22,6 @@ public class CreateContexts {
 	public static ProgramCompiler<ContraptionProgram> STRUCTURE;
 
 	public static void flwInit(GatherContextEvent event) {
-		GameStateRegistry.register(RainbowDebugStateProvider.INSTANCE);
         FileResolution header = Resolver.INSTANCE.get(ResourceUtil.subPath(CONTRAPTION, ".glsl"));
 
 		CWORLD = ProgramCompiler.create(Templates.INSTANCING, ContraptionProgram::new, header);

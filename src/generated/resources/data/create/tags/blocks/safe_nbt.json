@@ -1,6 +1,6 @@
 {
   "values": [
-    "create:creative_motor",
+    "create:creative_motor_old",
     "create:creative_fluid_tank",
     "create:mechanical_piston",
     "create:sticky_mechanical_piston",
@@ -23,6 +23,7 @@
     "create:pulse_repeater",
     "create:pulse_extender",
     "create:clipboard",
+    "create:creative_motor",
     "#minecraft:banners",
     "#minecraft:signs"
   ]

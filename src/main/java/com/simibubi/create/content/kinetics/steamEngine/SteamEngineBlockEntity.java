@@ -10,8 +10,8 @@ import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.content.contraptions.bearing.WindmillBearingBlockEntity.RotationDirection;
 import com.simibubi.create.content.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
-import com.simibubi.create.content.kinetics.base.GeneratingKineticBlockEntity;
 import com.simibubi.create.content.kinetics.base.IRotate;
+import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
@@ -57,7 +57,7 @@ public class SteamEngineBlockEntity extends SmartBlockEntity implements IHaveGog
 			Lang.translateDirect("contraptions.windmill.rotation_direction"), this, new SteamEngineValueBox());
 		movementDirection.onlyActiveWhen(() -> {
 			PoweredShaftBlockEntity shaft = getShaft();
-			return shaft == null || !shaft.hasSource();
+			return shaft == null;// || !shaft.hasSource();
 		});
 		movementDirection.withCallback($ -> onDirectionChanged());
 		behaviours.add(movementDirection);
@@ -110,14 +110,14 @@ public class SteamEngineBlockEntity extends SmartBlockEntity implements IHaveGog
 			award(AllAdvancements.STEAM_ENGINE);
 
 		int conveyedSpeedLevel =
-			efficiency == 0 ? 1 : verticalTarget ? 1 : (int) GeneratingKineticBlockEntity.convertToDirection(1, facing);
+			efficiency == 0 ? 1 : verticalTarget ? 1 : (int) KineticBlockEntity.convertToDirection(1, facing);
 		if (targetAxis == Axis.Z)
 			conveyedSpeedLevel *= -1;
 		if (movementDirection.get() == RotationDirection.COUNTER_CLOCKWISE)
 			conveyedSpeedLevel *= -1;
 
-		float shaftSpeed = shaft.getTheoreticalSpeed();
-		if (shaft.hasSource() && shaftSpeed != 0 && conveyedSpeedLevel != 0
+		float shaftSpeed = shaft.getSpeed();
+		if (/*shaft.hasSource() &&*/ shaftSpeed != 0 && conveyedSpeedLevel != 0
 			&& (shaftSpeed > 0) != (conveyedSpeedLevel > 0)) {
 			movementDirection.setValue(1 - movementDirection.get()
 				.ordinal());

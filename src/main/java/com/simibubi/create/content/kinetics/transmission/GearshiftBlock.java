@@ -1,7 +1,7 @@
 package com.simibubi.create.content.kinetics.transmission;
 
 import com.simibubi.create.AllBlockEntityTypes;
-import com.simibubi.create.content.kinetics.RotationPropagator;
+import com.simibubi.create.Create;
 import com.simibubi.create.content.kinetics.base.AbstractEncasedShaftBlock;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.foundation.block.IBE;
@@ -68,7 +68,7 @@ public class GearshiftBlock extends AbstractEncasedShaftBlock implements IBE<Spl
 		BlockEntity be = worldIn.getBlockEntity(pos);
 		if (be == null || !(be instanceof KineticBlockEntity))
 			return;
-		RotationPropagator.handleRemoved(worldIn, pos, (KineticBlockEntity) be);
+		Create.KINETICS_MANAGER.handleRemoved(worldIn, pos, (KineticBlockEntity) be);
 
 		// Re-attach next tick
 		if (reAttachNextTick)
@@ -81,6 +81,6 @@ public class GearshiftBlock extends AbstractEncasedShaftBlock implements IBE<Spl
 		if (be == null || !(be instanceof KineticBlockEntity))
 			return;
 		KineticBlockEntity kte = (KineticBlockEntity) be;
-		RotationPropagator.handleAdded(worldIn, pos, kte);
+		Create.KINETICS_MANAGER.handleAdded(worldIn, pos, kte);
 	}
 }

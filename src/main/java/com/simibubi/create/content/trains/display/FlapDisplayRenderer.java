@@ -81,7 +81,7 @@ public class FlapDisplayRenderer extends KineticBlockEntityRenderer<FlapDisplayB
 
 			Pose transform = ms.last();
 			FlapDisplayRenderOutput renderOutput = new FlapDisplayRenderOutput(buffer, color, transform.pose(), light,
-				j, !be.isSpeedRequirementFulfilled(), be.getLevel(), be.isLineGlowing(j));
+				j, !be.isRunning, be.getLevel(), be.isLineGlowing(j));
 
 			for (int i = 0; i < line.size(); i++) {
 				FlapDisplaySection section = line.get(i);

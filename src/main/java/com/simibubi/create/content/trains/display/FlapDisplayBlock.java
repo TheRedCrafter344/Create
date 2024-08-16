@@ -89,11 +89,6 @@ public class FlapDisplayBlock extends HorizontalKineticBlock
 	}
 
 	@Override
-	public SpeedLevel getMinimumRequiredSpeedLevel() {
-		return SpeedLevel.MEDIUM;
-	}
-
-	@Override
 	public BlockState getStateForPlacement(BlockPlaceContext context) {
 		Direction face = context.getClickedFace();
 		BlockPos clickedPos = context.getClickedPos();
@@ -147,7 +142,7 @@ public class FlapDisplayBlock extends HorizontalKineticBlock
 		int lineIndex = flapBE.getLineIndexAt(yCoord);
 
 		if (heldItem.isEmpty()) {
-			if (!flapBE.isSpeedRequirementFulfilled())
+			if (!flapBE.isRunning)
 				return InteractionResult.PASS;
 			flapBE.applyTextManually(lineIndex, null);
 			return InteractionResult.SUCCESS;
@@ -167,7 +162,7 @@ public class FlapDisplayBlock extends HorizontalKineticBlock
 
 		if (!display && dye == null)
 			return InteractionResult.PASS;
-		if (dye == null && !flapBE.isSpeedRequirementFulfilled())
+		if (dye == null && !flapBE.isRunning)
 			return InteractionResult.PASS;
 		if (world.isClientSide)
 			return InteractionResult.SUCCESS;

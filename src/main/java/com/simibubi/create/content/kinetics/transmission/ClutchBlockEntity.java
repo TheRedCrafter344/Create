@@ -14,11 +14,28 @@ public class ClutchBlockEntity extends SplitShaftBlockEntity {
 
 	@Override
 	public float getRotationSpeedModifier(Direction face) {
-		if (hasSource()) {
-			if (face != getSourceFacing() && getBlockState().getValue(BlockStateProperties.POWERED))
-				return 0;
+		float powered = getBlockState().getValue(BlockStateProperties.POWERED) ? 0 : 1;
+		switch(getBlockState().getValue(BlockStateProperties.AXIS)) {
+		case X:
+			switch(face) {
+			case EAST: return powered;
+			case WEST: return powered;
+			default: return 0;
+			}
+		case Y:
+			switch(face) {
+			case DOWN: return powered;
+			case UP: return powered;
+			default: return 0;
+			}
+		case Z:
+			switch(face) {
+			case NORTH: return powered;
+			case SOUTH: return powered;
+			default: return 0;
+			}
 		}
-		return 1;
+		return 0;
 	}
 
 }

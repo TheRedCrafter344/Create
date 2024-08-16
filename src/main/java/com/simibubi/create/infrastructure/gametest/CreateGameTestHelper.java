@@ -15,7 +15,6 @@ import com.simibubi.create.content.contraptions.actors.contraptionControls.Contr
 import com.simibubi.create.content.contraptions.actors.contraptionControls.ContraptionControlsMovingInteraction;
 import com.simibubi.create.content.contraptions.behaviour.MovementContext;
 import com.simibubi.create.content.kinetics.gauge.SpeedGaugeBlockEntity;
-import com.simibubi.create.content.kinetics.gauge.StressGaugeBlockEntity;
 import com.simibubi.create.content.logistics.tunnel.BrassTunnelBlockEntity.SelectionMode;
 import com.simibubi.create.content.redstone.nixieTube.NixieTubeBlockEntity;
 import com.simibubi.create.foundation.blockEntity.IMultiBlockEntityContainer;
@@ -137,10 +136,11 @@ public class CreateGameTestHelper extends GameTestHelper {
 		assertInRange(be.getSpeed(), value - 0.01, value + 0.01);
 	}
 
+	/*
 	public void assertStressometerCapacity(BlockPos stressometer, float value) {
 		StressGaugeBlockEntity be = getBlockEntity(AllBlockEntityTypes.STRESSOMETER.get(), stressometer);
 		assertInRange(be.getNetworkCapacity(), value - 0.01, value + 0.01);
-	}
+	}*/
 
 	public void toggleActorsOfType(Contraption contraption, ItemLike item) {
 		AtomicBoolean toggled = new AtomicBoolean(false);

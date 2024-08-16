@@ -1,12 +1,10 @@
 package com.simibubi.create.content.kinetics.base;
 
-import com.simibubi.create.content.kinetics.base.IRotate.SpeedLevel;
 import com.simibubi.create.foundation.utility.VecHelper;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
@@ -16,8 +14,8 @@ import net.minecraft.world.phys.Vec3;
 
 public class KineticEffectHandler {
 
-	int overStressedTime;
-	float overStressedEffect;
+	//int overStressedTime;
+	//float overStressedEffect;
 	int particleSpawnCountdown;
 	KineticBlockEntity kte;
 
@@ -29,7 +27,7 @@ public class KineticEffectHandler {
 		Level world = kte.getLevel();
 
 		if (world.isClientSide) {
-			if (overStressedTime > 0)
+			/*if (overStressedTime > 0)
 				if (--overStressedTime == 0)
 					if (kte.isOverStressed()) {
 						overStressedEffect = 1;
@@ -43,7 +41,7 @@ public class KineticEffectHandler {
 				overStressedEffect -= overStressedEffect * .1f;
 				if (Math.abs(overStressedEffect) < 1 / 128f)
 					overStressedEffect = 0;
-			}
+			}*/
 
 		} else if (particleSpawnCountdown > 0) {
 			if (--particleSpawnCountdown == 0)
@@ -93,9 +91,8 @@ public class KineticEffectHandler {
 
 		char axisChar = axis.name().charAt(0);
 		Vec3 vec = VecHelper.getCenterOf(pos);
-		SpeedLevel speedLevel = SpeedLevel.of(speed);
-		int color = speedLevel.getColor();
-		int particleSpeed = speedLevel.getParticleSpeed();
+		int color = 0x0084FF;
+		int particleSpeed = 20;
 		particleSpeed *= Math.signum(speed);
 
 		if (world instanceof ServerLevel) {
@@ -105,8 +102,8 @@ public class KineticEffectHandler {
 		}
 	}
 
-	public void triggerOverStressedEffect() {
-		overStressedTime = overStressedTime == 0 ? 2 : 0;
-	}
+	//public void triggerOverStressedEffect() {
+	//	overStressedTime = overStressedTime == 0 ? 2 : 0;
+	//}
 
 }

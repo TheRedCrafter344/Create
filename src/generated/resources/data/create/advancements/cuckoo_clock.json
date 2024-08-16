@@ -1,5 +1,5 @@
 {
-  "parent": "create:stressometer",
+  "parent": "create:wrench_goggles",
   "criteria": {
     "0": {
       "conditions": {},
