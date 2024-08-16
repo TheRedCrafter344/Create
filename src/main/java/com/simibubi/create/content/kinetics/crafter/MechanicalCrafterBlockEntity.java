@@ -24,6 +24,7 @@ import com.simibubi.create.foundation.item.SmartInventory;
 import com.simibubi.create.foundation.utility.BlockFace;
 import com.simibubi.create.foundation.utility.Pointing;
 import com.simibubi.create.foundation.utility.VecHelper;
+import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -130,6 +131,12 @@ public class MechanicalCrafterBlockEntity extends KineticBlockEntity {
 		}
 	}
 
+	@Override
+	public float getTorque(float speed) {
+		boolean isRunning = phase != Phase.IDLE;
+		return super.getTorque(speed) + (isRunning ? AllConfigs.server().kinetics.crafterTorque.getF() : 0) * -Math.signum(speed);
+	}
+	
 	public void blockChanged() {
 		removeBehaviour(InvManipulationBehaviour.TYPE);
 		inserting = new InvManipulationBehaviour(this, this::getTargetFace);

@@ -10,7 +10,6 @@ import com.jozufozu.flywheel.core.layout.BufferLayout;
 import com.jozufozu.flywheel.core.model.ModelTransformer;
 import com.jozufozu.flywheel.util.RenderMath;
 import com.mojang.math.Axis;
-import com.simibubi.create.content.kinetics.KineticDebugger;
 import com.simibubi.create.foundation.render.AllInstanceFormats;
 import com.simibubi.create.foundation.render.AllProgramSpecs;
 import com.simibubi.create.foundation.utility.AnimationTickHolder;
@@ -48,8 +47,5 @@ public class RotatingType implements Instanced<RotatingData>, Batched<RotatingDa
 				.multiply(axis.rotationDegrees(angle))
 				.unCentre();
 
-		if (KineticDebugger.isActive()) {
-			b.color(d.r, d.g, d.b, d.a);
-		}
 	}
 }

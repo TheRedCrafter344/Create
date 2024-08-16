@@ -7,7 +7,6 @@ import org.jetbrains.annotations.Nullable;
 
 import com.simibubi.create.compat.computercraft.AbstractComputerBehaviour;
 import com.simibubi.create.compat.computercraft.ComputerCraftProxy;
-import com.simibubi.create.content.kinetics.base.IRotate.SpeedLevel;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.utility.Color;
 import com.simibubi.create.foundation.utility.Lang;
@@ -43,8 +42,7 @@ public class SpeedGaugeBlockEntity extends GaugeBlockEntity {
 		float speed = Math.abs(getSpeed());
 
 		dialTarget = getDialTarget(speed);
-		color = Color.mixColors(SpeedLevel.of(speed)
-			.getColor(), 0xffffff, .25f);
+		color =  0xffffff;
 
 		setChanged();
 	}
@@ -74,8 +72,6 @@ public class SpeedGaugeBlockEntity extends GaugeBlockEntity {
 		super.addToGoggleTooltip(tooltip, isPlayerSneaking);
 		Lang.translate("gui.speedometer.title")
 			.style(ChatFormatting.GRAY)
-			.forGoggles(tooltip);
-		SpeedLevel.getFormattedSpeedText(speed, isOverStressed())
 			.forGoggles(tooltip);
 		return true;
 	}

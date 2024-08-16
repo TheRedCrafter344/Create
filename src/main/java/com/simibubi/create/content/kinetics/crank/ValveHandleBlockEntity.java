@@ -7,9 +7,10 @@ import com.jozufozu.flywheel.api.Instancer;
 import com.jozufozu.flywheel.api.Material;
 import com.jozufozu.flywheel.core.materials.model.ModelData;
 import com.simibubi.create.AllBlocks;
+import com.simibubi.create.content.kinetics.KineticNetwork;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
-import com.simibubi.create.content.kinetics.transmission.sequencer.SequencedGearshiftBlockEntity.SequenceContext;
+import com.simibubi.create.content.kinetics.crank.HandCrankBlockEntity;
 import com.simibubi.create.content.kinetics.transmission.sequencer.SequencerInstructions;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
@@ -44,10 +45,15 @@ public class ValveHandleBlockEntity extends HandCrankBlockEntity {
 	public ScrollValueBehaviour angleInput;
 	public int cooldown;
 
+	private float isTurning = 0;
+	
 	protected int startAngle;
 	protected int targetAngle;
 	protected int totalUseTicks;
 
+	private static final float ROTATION_MOMENTUM = 3200;
+	private static final float MAX_INERTIA = 1500;
+	
 	public ValveHandleBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
 	}
@@ -84,6 +90,18 @@ public class ValveHandleBlockEntity extends HandCrankBlockEntity {
 	@Override
 	public void tick() {
 		super.tick();
+		if(inUse == 0 && isTurning != 0 && !level.isClientSide() && network != null) {
+			KineticNetwork network = getOrCreateNetwork();
+			float speed = network.speed;
+			float speedReduction = isTurning;
+			isTurning = 0;
+			if(Math.signum(speed - speedReduction) != Math.signum(speed)) {
+				network.speed = 0;
+			} else {
+				network.speed -= speedReduction;
+			}
+			network.sendToClient();
+		}
 		if (inUse == 0 && cooldown > 0)
 			cooldown--;
 		independentAngle = level.isClientSide() ? getIndependentAngle(0) : 0;
@@ -91,7 +109,7 @@ public class ValveHandleBlockEntity extends HandCrankBlockEntity {
 
 	@Override
 	public float getIndependentAngle(float partialTicks) {
-		if (inUse == 0 && source != null && getSpeed() != 0)
+		if (inUse == 0 && /*source != null &&*/ Math.abs(getSpeed()) > 1f)
 			return KineticBlockEntityRenderer.getAngleForTe(this, worldPosition,
 				KineticBlockEntityRenderer.getRotationAxisOf(this));
 
@@ -106,41 +124,48 @@ public class ValveHandleBlockEntity extends HandCrankBlockEntity {
 			: targetAngle) * Mth.DEG_TO_RAD * (backwards ? -1 : 1) * step;
 	}
 
+	@Override
+	public float getTorque(float speed) {
+		return 0;
+	}
+	
 	public boolean showValue() {
 		return inUse == 0;
 	}
 
 	public boolean activate(boolean sneak) {
-		if (getTheoreticalSpeed() != 0)
+		if (network == null) return false;
+		if (Math.abs(getSpeed()) > 1f)
 			return false;
 		if (inUse > 0 || cooldown > 0)
 			return false;
 		if (level.isClientSide)
 			return true;
 
-		// Always overshoot, target will stop early
 		int value = angleInput.getValue();
 		int target = Math.abs(value);
-		int rotationSpeed = AllBlocks.COPPER_VALVE_HANDLE.get()
-			.getRotationSpeed();
+		KineticNetwork network = getOrCreateNetwork();
+		float effectiveInertia = network.getEffectiveInertia();
+		if(effectiveInertia > MAX_INERTIA) return false;
+		float rotationSpeed = ROTATION_MOMENTUM / effectiveInertia;
 		double degreesPerTick = KineticBlockEntity.convertToAngular(rotationSpeed);
-		inUse = (int) Math.ceil(target / degreesPerTick) + 2;
+		inUse = (int) Math.ceil(target / degreesPerTick);
 
 		startAngle = (int) ((independentAngle) % 90 + 360) % 90;
 		targetAngle = Math.round((startAngle + (target > 135 ? 180 : 90) * Mth.sign(value)) / 90f) * 90;
 		totalUseTicks = inUse;
 		backwards = sneak;
 
-		sequenceContext = SequenceContext.fromGearshift(SequencerInstructions.TURN_ANGLE, rotationSpeed, target);
-		updateGeneratedRotation();
+		//onSpeedChanged(this.speed);
+		
+		network.speed += rotationSpeed;
+		network.sendToClient();
+		isTurning = rotationSpeed;
 		cooldown = 4;
 
 		return true;
 	}
-
-	@Override
-	protected void copySequenceContextFrom(KineticBlockEntity sourceBE) {}
-
+	
 	@Override
 	@OnlyIn(Dist.CLIENT)
 	public SuperByteBuffer getRenderedHandle() {

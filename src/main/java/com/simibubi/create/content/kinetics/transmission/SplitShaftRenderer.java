@@ -32,7 +32,6 @@ public class SplitShaftRenderer extends KineticBlockEntityRenderer<SplitShaftBlo
 		Block block = be.getBlockState().getBlock();
 		final Axis boxAxis = ((IRotate) block).getRotationAxis(be.getBlockState());
 		final BlockPos pos = be.getBlockPos();
-		float time = AnimationTickHolder.getRenderTime(be.getLevel());
 
 		for (Direction direction : Iterate.directions) {
 			Axis axis = direction.getAxis();
@@ -40,9 +39,11 @@ public class SplitShaftRenderer extends KineticBlockEntityRenderer<SplitShaftBlo
 				continue;
 
 			float offset = getRotationOffsetForPosition(be, pos, axis);
-			float angle = (time * be.getSpeed() * 3f / 10) % 360;
+			float angle = be.getRenderAngle(AnimationTickHolder.getPartialTicks());
 			float modifier = be.getRotationSpeedModifier(direction);
 
+			if(modifier == 0) continue;
+			
 			angle *= modifier;
 			angle += offset;
 			angle = angle / 180f * (float) Math.PI;

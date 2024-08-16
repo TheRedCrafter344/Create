@@ -7,7 +7,7 @@ import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.content.contraptions.AssemblyException;
 import com.simibubi.create.content.contraptions.ControlledContraptionEntity;
 import com.simibubi.create.content.contraptions.IDisplayAssemblyExceptions;
-import com.simibubi.create.content.kinetics.base.GeneratingKineticBlockEntity;
+import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.content.kinetics.transmission.sequencer.SequencerInstructions;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
@@ -26,7 +26,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
-public class MechanicalBearingBlockEntity extends GeneratingKineticBlockEntity
+public class MechanicalBearingBlockEntity extends KineticBlockEntity
 	implements IBearingBlockEntity, IDisplayAssemblyExceptions {
 
 	protected ScrollOptionBehaviour<RotationMode> movementMode;
@@ -133,13 +133,13 @@ public class MechanicalBearingBlockEntity extends GeneratingKineticBlockEntity
 				.stop(level);
 		}
 
-		if (!isWindmill() && sequenceContext != null
-			&& sequenceContext.instruction() == SequencerInstructions.TURN_ANGLE)
-			sequencedAngleLimit = sequenceContext.getEffectiveValue(getTheoreticalSpeed());
+		//if (!isWindmill() && sequenceContext != null
+		//	&& sequenceContext.instruction() == SequencerInstructions.TURN_ANGLE)
+		//	sequencedAngleLimit = sequenceContext.getEffectiveValue(getTheoreticalSpeed());
 	}
 
 	public float getAngularSpeed() {
-		float speed = convertToAngular(isWindmill() ? getGeneratedSpeed() : getSpeed());
+		float speed = convertToAngular(getSpeed());
 		if (getSpeed() == 0)
 			speed = 0;
 		if (level.isClientSide) {
@@ -201,7 +201,6 @@ public class MechanicalBearingBlockEntity extends GeneratingKineticBlockEntity
 		running = true;
 		angle = 0;
 		sendData();
-		updateGeneratedRotation();
 	}
 
 	public void disassemble() {
@@ -218,7 +217,6 @@ public class MechanicalBearingBlockEntity extends GeneratingKineticBlockEntity
 
 		movedContraption = null;
 		running = false;
-		updateGeneratedRotation();
 		assembleNextTick = false;
 		sendData();
 	}
@@ -236,7 +234,7 @@ public class MechanicalBearingBlockEntity extends GeneratingKineticBlockEntity
 			if (running) {
 				boolean canDisassemble = movementMode.get() == RotationMode.ROTATE_PLACE
 					|| (isNearInitialAngle() && movementMode.get() == RotationMode.ROTATE_PLACE_RETURNED);
-				if (speed == 0 && (canDisassemble || movedContraption == null || movedContraption.getContraption()
+				if (getSpeed() == 0 && (canDisassemble || movedContraption == null || movedContraption.getContraption()
 					.getBlocks()
 					.isEmpty())) {
 					if (movedContraption != null)
@@ -246,7 +244,7 @@ public class MechanicalBearingBlockEntity extends GeneratingKineticBlockEntity
 					return;
 				}
 			} else {
-				if (speed == 0 && !isWindmill())
+				if (getSpeed() == 0 && !isWindmill())
 					return;
 				assemble();
 			}

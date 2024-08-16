@@ -231,7 +231,11 @@
 	"create.logistics.creative_crate.supply": "Infinite Supply",
 	"create.logistics.train_observer.cargo_filter": "Cargo Filter",
 	
-	"create.kinetics.creative_motor.rotation_speed": "Generated Speed in RPM",
+	"create.kinetics.creative_motor.generator_settings": "Generator Settings",
+    "create.kinetics.creative_motor.constant_power": "Constant Power",
+    "create.kinetics.creative_motor.constant_torque":  "Constant Torque",
+    "create.kinetics.creative_motor.match_speed": "Target Speed",
+    
 	"create.kinetics.speed_controller.rotation_speed": "Targeted Speed in RPM",
 	"create.kinetics.valve_handle.rotated_angle": "Rotation when used",
 	

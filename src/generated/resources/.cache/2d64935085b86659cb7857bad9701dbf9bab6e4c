@@ -1,4 +1,4 @@
-// 1.20.1	2023-09-20T19:40:25.374215	Registrate Provider for create [Recipes, Advancements, Loot Tables, Tags (blocks), Tags (items), Tags (fluids), Tags (entity_types), Blockstates, Item models, Lang (en_us/en_ud)]
+// 1.20.1	2024-08-15T20:55:06.0938819	Registrate Provider for create [Recipes, Advancements, Loot Tables, Tags (blocks), Tags (items), Tags (fluids), Tags (entity_types), Blockstates, Item models, Lang (en_us/en_ud)]
 60bbdf92d2ac9824ea6144955c74043a6005f79d assets/create/blockstates/acacia_window.json
 6a67703c2697d81b7dc83e9d72a66f9c9ff08383 assets/create/blockstates/acacia_window_pane.json
 c3ae87b62e81d8e9476eccd793bb1548d74c66a1 assets/create/blockstates/adjustable_chain_gearshift.json
@@ -448,7 +448,7 @@ bff758cc56bece375b40c32067b903b675065328 assets/create/blockstates/schematicanno
 8c34743564aa0473745ecec304a19e15e9e87cf2 assets/create/blockstates/scoria.json
 e5aff9dc8fa5e98b060232974194afb06d497d09 assets/create/blockstates/scoria_pillar.json
 9f94cca240761a9898334c7bef9849b9aff5e73e assets/create/blockstates/secondary_linear_chassis.json
-3343224d6da4e75f0bc7a7634ba010a4ba54ad70 assets/create/blockstates/sequenced_gearshift.json
+ad92f22fca53969415cf5efadf2ec95fa35360df assets/create/blockstates/sequenced_gearshift.json
 4c261d54117ee295b307f6ea3e56a09437631f73 assets/create/blockstates/shadow_steel_casing.json
 4c67d2a1a1faea5be2a81ebc0722c32d8e2e84d6 assets/create/blockstates/shaft.json
 c606f103619088e8a5afe969ba54929af480a3d2 assets/create/blockstates/small_andesite_bricks.json
@@ -521,7 +521,6 @@ a60c9c8241e40c2e28f5760c0ca6e80cfe9d59f3 assets/create/blockstates/steam_whistle
 8865500bcd2e4d467e74edb3509850fa92a5809f assets/create/blockstates/sticker.json
 bed0534e618105184bc877b104230403ca85bb58 assets/create/blockstates/sticky_mechanical_piston.json
 bab242ab794e6d439645c2d5a0242ae7c81942ff assets/create/blockstates/stockpile_switch.json
-a70c025de5d85180f371ff05bbdc531d8bdfaab1 assets/create/blockstates/stressometer.json
 8086f80c532fad42b37fcdc590b890ed7e8c3fe9 assets/create/blockstates/tiled_glass.json
 1143ab7223c655764a81ed72ac385ea179664072 assets/create/blockstates/tiled_glass_pane.json
 4ece6f758ff42664c144a23572032578b68bc320 assets/create/blockstates/track.json
@@ -585,8 +584,8 @@ b0d8f08968763a5f74e5cd5644377a76a9f39753 assets/create/blockstates/yellow_toolbo
 fe8c497aacc641c2f01cec90bba9f19e59cc2ed2 assets/create/blockstates/yellow_valve_handle.json
 e819e93fdcbe9fd9c050a052d2718ff3b3539365 assets/create/blockstates/zinc_block.json
 64121dcb216381c83b4fe28aa361ea07c24c9ad0 assets/create/blockstates/zinc_ore.json
-79a43e6c997dbfa078c6aa8e4ab0c4386aaf4dd9 assets/create/lang/en_ud.json
-d8d0f395ae53d72ea0d5047b9167569fe87c870d assets/create/lang/en_us.json
+a810ac0396a95e65953aa3e62e3cbfb3bb7cf301 assets/create/lang/en_ud.json
+f8cd1d8b19cafc98289a637d80056a3d93c29fec assets/create/lang/en_us.json
 a97e1060e00ae701a02e39cd4ef8054cf345fac4 assets/create/models/block/acacia_window.json
 103e032c0b1a0a6a27c67da8c91179a564bd281c assets/create/models/block/acacia_window_pane_noside.json
 fb00b627abda76ad4fea867ca57dbfadd24fffa3 assets/create/models/block/acacia_window_pane_noside_alt.json
@@ -2215,7 +2214,6 @@ b82ab0c69df330f6f938ed1beee7b4add67d2e50 assets/create/models/item/steam_engine.
 54f200be903e056e5cf9e2186f0a0a51f8f0f84e assets/create/models/item/sticker.json
 0f88de164439640cc175ceef2017f7416b5a7018 assets/create/models/item/sticky_mechanical_piston.json
 4b640b66765b206f8c2884b7c1a1ef860b81d841 assets/create/models/item/stockpile_switch.json
-6ee792277b9fd980c40e18e841afa63fc500ed0b assets/create/models/item/stressometer.json
 8d4ce1ccf180016506292f63188c10d0dabe0ee3 assets/create/models/item/sturdy_sheet.json
 a10bb4d6d1a4483a806e3aaa086d48c0e20aaefe assets/create/models/item/super_glue.json
 dddac09bb9dd962d99502ab10929ae6886fbd831 assets/create/models/item/sweet_roll.json
@@ -3463,7 +3461,6 @@ cae1bd9100b62841e260880faa80e2442f44a141 data/create/loot_tables/blocks/steam_wh
 0bc3fdde351129e3a261a2420aff9d3f063c235e data/create/loot_tables/blocks/sticker.json
 074f526902cb5fcff2129614428aba1ea05a6649 data/create/loot_tables/blocks/sticky_mechanical_piston.json
 a7332324e63f7d28621ddfbd54eb3d091461d890 data/create/loot_tables/blocks/stockpile_switch.json
-b13496b1b4bc0be30605832e23894fb374dd796e data/create/loot_tables/blocks/stressometer.json
 2d397c2a37e0d5a6c0028367cc0bdabd75f0c752 data/create/loot_tables/blocks/tiled_glass.json
 0ad584e41780dc0183af1fa1e49e126730dfdbab data/create/loot_tables/blocks/tiled_glass_pane.json
 ea279a86c8558a3e1e48f4f6f204bb8f084125ca data/create/loot_tables/blocks/track.json
@@ -4166,7 +4163,7 @@ fdd28fc956dbec71ba24cdea5adfc049d6eb31e3 data/create/recipes/tuff_pillar_from_st
 93c61ebeda451ebeb37c3047459f95f14fa9f1f9 data/create/recipes/weathered_copper_tile_slab_from_weathered_copper_tiles_stonecutting.json
 8a32b955b4320eddff017378785d1c95e1434229 data/create/recipes/weathered_copper_tile_stairs.json
 f1a03ac86925e26cbec6aeeada2eafb40008fc8e data/create/recipes/weathered_copper_tile_stairs_from_weathered_copper_tiles_stonecutting.json
-8b98a671e80724e815a3af0c3764d760e4170e02 data/create/tags/blocks/brittle.json
+84b89994d99a155eef31ca5d281cbb7f0ca9e765 data/create/tags/blocks/brittle.json
 8b6c0b444b15f7fb2d55b9cbcb68537c1269f877 data/create/tags/blocks/casing.json
 35133e95f1c8fdd7a1c21afcc231fc0bffefb9a8 data/create/tags/blocks/contraption_inventory_deny.json
 c7ec0dbc18e9c1b58e568ed925287b89df11a136 data/create/tags/blocks/copycat_allow.json
@@ -4189,6 +4186,7 @@ a5874f73c7dc0a3ae12999e6ae8abf45bc7fb9be data/create/tags/blocks/passive_boiler_
 da739ad2160e7df4e0e5cc89587670ce5e9450c3 data/create/tags/blocks/valve_handles.json
 72143286fb5cb372a0696550e2eac76ca50e6fbc data/create/tags/blocks/windmill_sails.json
 58987ea71d488cc48192ceb00c00aa2903e51304 data/create/tags/blocks/wrench_pickup.json
+76c0522664726c09461ad4565b6fba80b4f816b2 data/create/tags/entity_types/blaze_burner_capturable.json
 35133e95f1c8fdd7a1c21afcc231fc0bffefb9a8 data/create/tags/entity_types/ignore_seat.json
 894e1e4fd1e32712abdda18ec64ab13750d3c039 data/create/tags/fluids/bottomless/allow.json
 35133e95f1c8fdd7a1c21afcc231fc0bffefb9a8 data/create/tags/fluids/bottomless/deny.json
@@ -4287,8 +4285,8 @@ c741ba83b562ae3459d7c4f2db69537f549ea411 data/forge/tags/items/tools/wrench.json
 515a1c773e617dd7e38aa1b893acc7db2dd30e08 data/minecraft/tags/blocks/dripstone_replaceable_blocks.json
 e3321ff14704c031a2c16953b7e391f4f24dd70b data/minecraft/tags/blocks/impermeable.json
 515a1c773e617dd7e38aa1b893acc7db2dd30e08 data/minecraft/tags/blocks/lush_ground_replaceable.json
-5a030817b2322e363edc8f5376f7c9de73df8b48 data/minecraft/tags/blocks/mineable/axe.json
-d794a156fdc9ec9e7c935b3b8962206b7b82eb79 data/minecraft/tags/blocks/mineable/pickaxe.json
+216d8d63d77b483f36faa6a968c9b87e524eaa0a data/minecraft/tags/blocks/mineable/axe.json
+e6e5032e1050ee42d621d31ea1583f62e1ed96c6 data/minecraft/tags/blocks/mineable/pickaxe.json
 515a1c773e617dd7e38aa1b893acc7db2dd30e08 data/minecraft/tags/blocks/moss_replaceable.json
 0c13aae0eeb99e89febe8dbe5e002af2ff843a9e data/minecraft/tags/blocks/needs_iron_tool.json
 3cb2a92cbdf32ed5978f740dc378d363306c3e84 data/minecraft/tags/blocks/needs_stone_tool.json

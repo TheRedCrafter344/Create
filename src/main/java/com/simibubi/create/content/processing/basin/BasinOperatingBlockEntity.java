@@ -35,14 +35,16 @@ public abstract class BasinOperatingBlockEntity extends KineticBlockEntity {
 		behaviours.add(basinChecker);
 	}
 
+	
 	@Override
 	public void onSpeedChanged(float prevSpeed) {
 		super.onSpeedChanged(prevSpeed);
-		if (getSpeed() == 0)
+		if (Math.abs(getSpeed()) < 0.05f)
 			basinRemoved = true;
 		basinRemoved = false;
 		basinChecker.scheduleUpdate();
 	}
+	
 
 	@Override
 	public void tick() {
@@ -59,7 +61,7 @@ public abstract class BasinOperatingBlockEntity extends KineticBlockEntity {
 	protected boolean updateBasin() {
 		if (!isSpeedRequirementFulfilled())
 			return true;
-		if (getSpeed() == 0)
+		if (Math.abs(getSpeed()) < 0.05f)
 			return true;
 		if (isRunning())
 			return true;
@@ -78,6 +80,8 @@ public abstract class BasinOperatingBlockEntity extends KineticBlockEntity {
 		sendData();
 		return true;
 	}
+
+	protected abstract boolean isSpeedRequirementFulfilled();
 
 	protected abstract boolean isRunning();
 

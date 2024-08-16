@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 
 import com.simibubi.create.compat.computercraft.AbstractComputerBehaviour;
 import com.simibubi.create.compat.computercraft.ComputerCraftProxy;
+import com.simibubi.create.content.kinetics.base.DirectionalKineticBlock;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.content.kinetics.transmission.SplitShaftBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
@@ -34,6 +35,7 @@ public class SequencedGearshiftBlockEntity extends SplitShaftBlockEntity {
 	
 	public AbstractComputerBehaviour computerBehaviour;
 
+	/*
 	public record SequenceContext(SequencerInstructions instruction, double relativeValue) {
 
 		public static SequenceContext fromGearshift(SequencerInstructions instruction, double kineticSpeed,
@@ -62,6 +64,7 @@ public class SequencedGearshiftBlockEntity extends SplitShaftBlockEntity {
 		}
 
 	}
+*/
 
 	public SequencedGearshiftBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
@@ -91,7 +94,7 @@ public class SequencedGearshiftBlockEntity extends SplitShaftBlockEntity {
 			return;
 		if (timer < currentInstructionDuration) {
 			timer++;
-			currentInstructionProgress += getInstruction(currentInstruction).getTickProgress(speed);
+			currentInstructionProgress += getInstruction(currentInstruction).getTickProgress(getSpeed());
 			return;
 		}
 		run(currentInstruction + 1);
@@ -102,7 +105,7 @@ public class SequencedGearshiftBlockEntity extends SplitShaftBlockEntity {
 		super.onSpeedChanged(previousSpeed);
 		if (isIdle())
 			return;
-		float currentSpeed = Math.abs(speed);
+		float currentSpeed = Math.abs(getSpeed());
 		if (Math.abs(previousSpeed) == currentSpeed)
 			return;
 		Instruction instruction = getInstruction(currentInstruction);
@@ -112,7 +115,7 @@ public class SequencedGearshiftBlockEntity extends SplitShaftBlockEntity {
 			run(-1);
 
 		// Update instruction time with regards to new speed
-		currentInstructionDuration = instruction.getDuration(currentInstructionProgress, getTheoreticalSpeed());
+		currentInstructionDuration = instruction.getDuration(currentInstructionProgress, getSpeed());
 		timer = 0;
 	}
 
@@ -164,7 +167,6 @@ public class SequencedGearshiftBlockEntity extends SplitShaftBlockEntity {
 			currentInstruction = -1;
 			currentInstructionDuration = -1;
 			currentInstructionProgress = 0;
-			sequenceContext = null;
 			timer = 0;
 			if (!level.hasNeighborSignal(worldPosition))
 				level.setBlock(worldPosition, getBlockState().setValue(SequencedGearshiftBlock.STATE, 0), 3);
@@ -174,11 +176,9 @@ public class SequencedGearshiftBlockEntity extends SplitShaftBlockEntity {
 		}
 
 		detachKinetics();
-		currentInstructionDuration = instruction.getDuration(0, getTheoreticalSpeed());
+		currentInstructionDuration = instruction.getDuration(0, getSpeed());
 		currentInstruction = instructionIndex;
 		currentInstructionProgress = 0;
-		sequenceContext = SequenceContext.fromGearshift(instruction.instruction, getTheoreticalSpeed() * getModifier(),
-			instruction.value);
 		timer = 0;
 		level.setBlock(worldPosition, getBlockState().setValue(SequencedGearshiftBlock.STATE, instructionIndex + 1), 3);
 	}
@@ -188,9 +188,6 @@ public class SequencedGearshiftBlockEntity extends SplitShaftBlockEntity {
 			: null;
 	}
 
-	@Override
-	protected void copySequenceContextFrom(KineticBlockEntity sourceBE) {}
-	
 	@Override
 	public void write(CompoundTag compound, boolean clientPacket) {
 		compound.putInt("InstructionIndex", currentInstruction);
@@ -229,9 +226,13 @@ public class SequencedGearshiftBlockEntity extends SplitShaftBlockEntity {
 
 	@Override
 	public float getRotationSpeedModifier(Direction face) {
+		Direction targetFacing = getBlockState().getValue(DirectionalKineticBlock.FACING);
+		Direction sourceFacing = targetFacing.getOpposite();
 		if (isVirtual())
 			return 1;
-		return (!hasSource() || face == getSourceFacing()) ? 1 : getModifier();
+		if(face == targetFacing) return getModifier();
+		if(face == sourceFacing) return 1;
+		return 0;
 	}
 
 	public int getModifier() {

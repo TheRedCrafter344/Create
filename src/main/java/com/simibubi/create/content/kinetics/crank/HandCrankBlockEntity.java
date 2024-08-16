@@ -6,10 +6,12 @@ import com.jozufozu.flywheel.core.materials.model.ModelData;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.AllSoundEvents;
-import com.simibubi.create.content.kinetics.base.GeneratingKineticBlockEntity;
+import com.simibubi.create.Create;
+import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.foundation.render.CachedBufferer;
 import com.simibubi.create.foundation.render.SuperByteBuffer;
 import com.simibubi.create.foundation.utility.AnimationTickHolder;
+import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -20,7 +22,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
-public class HandCrankBlockEntity extends GeneratingKineticBlockEntity {
+public class HandCrankBlockEntity extends KineticBlockEntity {
 
 	public int inUse;
 	public boolean backwards;
@@ -32,21 +34,15 @@ public class HandCrankBlockEntity extends GeneratingKineticBlockEntity {
 	}
 
 	public void turn(boolean back) {
-		boolean update = false;
-
-		if (getGeneratedSpeed() == 0 || back != backwards)
-			update = true;
-
 		inUse = 10;
 		this.backwards = back;
-		if (update && !level.isClientSide)
-			updateGeneratedRotation();
 	}
 
 	public float getIndependentAngle(float partialTicks) {
 		return (independentAngle + partialTicks * chasingVelocity) / 360;
 	}
 
+	/*
 	@Override
 	public float getGeneratedSpeed() {
 		Block block = getBlockState().getBlock();
@@ -56,7 +52,20 @@ public class HandCrankBlockEntity extends GeneratingKineticBlockEntity {
 		int speed = (inUse == 0 ? 0 : clockwise() ? -1 : 1) * crank.getRotationSpeed();
 		return convertToDirection(speed, getBlockState().getValue(HandCrankBlock.FACING));
 	}
+	*/
 
+	@Override
+	public float getTorque(float speed) {
+		float clampedSpeed = speed > 0 ? Math.max(speed, 1) : Math.min(speed, -1);
+		float torque = (inUse == 0 ? 0 : clockwise() ? -1 : 1) * AllConfigs.server().kinetics.handcrankPower.getF() / Math.abs(clampedSpeed);
+		return super.getTorque(speed) + convertToDirection(torque, getBlockState().getValue(HandCrankBlock.FACING));
+	}
+	
+	@Override
+	public boolean shouldCreateNetwork() {
+		return true;
+	}
+	
 	protected boolean clockwise() {
 		return backwards;
 	}
@@ -78,18 +87,12 @@ public class HandCrankBlockEntity extends GeneratingKineticBlockEntity {
 	@Override
 	public void tick() {
 		super.tick();
-
-		float actualSpeed = getSpeed();
-		chasingVelocity += ((actualSpeed * 10 / 3f) - chasingVelocity) * .25f;
+		
+		chasingVelocity += ((getSpeed() * 10 / 3f) - chasingVelocity) * .25f;
 		independentAngle += chasingVelocity;
 
 		if (inUse > 0) {
-			inUse--;
-
-			if (inUse == 0 && !level.isClientSide) {
-				sequenceContext = null;
-				updateGeneratedRotation();
-			}
+			inUse--;	
 		}
 	}
 
@@ -112,12 +115,6 @@ public class HandCrankBlockEntity extends GeneratingKineticBlockEntity {
 	@OnlyIn(Dist.CLIENT)
 	public boolean shouldRenderShaft() {
 		return true;
-	}
-
-	@Override
-	protected Block getStressConfigKey() {
-		return AllBlocks.HAND_CRANK.has(getBlockState()) ? AllBlocks.HAND_CRANK.get()
-			: AllBlocks.COPPER_VALVE_HANDLE.get();
 	}
 
 	@Override

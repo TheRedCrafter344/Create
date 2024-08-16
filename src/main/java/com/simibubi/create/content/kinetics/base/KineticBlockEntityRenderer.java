@@ -6,7 +6,6 @@ import com.jozufozu.flywheel.backend.Backend;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.simibubi.create.AllBlocks;
-import com.simibubi.create.content.kinetics.KineticDebugger;
 import com.simibubi.create.content.kinetics.simpleRelays.ICogWheel;
 import com.simibubi.create.foundation.blockEntity.renderer.SafeBlockEntityRenderer;
 import com.simibubi.create.foundation.render.CachedBufferer;
@@ -35,7 +34,7 @@ public class KineticBlockEntityRenderer<T extends KineticBlockEntity> extends Sa
 	public static final SuperByteBufferCache.Compartment<BlockState> KINETIC_BLOCK = new SuperByteBufferCache.Compartment<>();
 	public static boolean rainbowMode = false;
 
-	protected static final RenderType[] REVERSED_CHUNK_BUFFER_LAYERS = RenderType.chunkBufferLayers().toArray(RenderType[]::new);
+	protected static final RenderType[] REVERSED_CHUNK_BUFFER_LAYERS = RenderType.chunkBufferLayers().toArray(RenderType[]::new);	
 	static {
 		ArrayUtils.reverse(REVERSED_CHUNK_BUFFER_LAYERS);
 	}
@@ -85,10 +84,10 @@ public class KineticBlockEntityRenderer<T extends KineticBlockEntity> extends Sa
 	}
 
 	public static float getAngleForTe(KineticBlockEntity be, final BlockPos pos, Axis axis) {
-		float time = AnimationTickHolder.getRenderTime(be.getLevel());
+		//float time = AnimationTickHolder.getRenderTime(be.getLevel());
 		float offset = getRotationOffsetForPosition(be, pos, axis);
-		float angle = ((time * be.getSpeed() * 3f / 10 + offset) % 360) / 180 * (float) Math.PI;
-		return angle;
+		//float angle = ((time * be.getSpeed() * 3f / 10 + offset) % 360) / 180 * (float) Math.PI;
+		return (be.getRenderAngle(AnimationTickHolder.getPartialTicks(be.getLevel())) + offset) / 180 * (float) Math.PI;
 	}
 
 	public static SuperByteBuffer standardKineticRotationTransform(SuperByteBuffer buffer, KineticBlockEntity be,
@@ -104,19 +103,8 @@ public class KineticBlockEntityRenderer<T extends KineticBlockEntity> extends Sa
 		buffer.light(light);
 		buffer.rotateCentered(Direction.get(AxisDirection.POSITIVE, axis), angle);
 
-		if (KineticDebugger.isActive()) {
-			rainbowMode = true;
-			buffer.color(be.hasNetwork() ? Color.generateFromLong(be.network) : Color.WHITE);
-		} else {
-			float overStressedEffect = be.effects.overStressedEffect;
-			if (overStressedEffect != 0)
-				if (overStressedEffect > 0)
-					buffer.color(Color.WHITE.mixWith(Color.RED, overStressedEffect));
-				else
-					buffer.color(Color.WHITE.mixWith(Color.SPRING_GREEN, -overStressedEffect));
-			else
-				buffer.color(Color.WHITE);
-		}
+		
+		buffer.color(Color.WHITE);
 
 		return buffer;
 	}

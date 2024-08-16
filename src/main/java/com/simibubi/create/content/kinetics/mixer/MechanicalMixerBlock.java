@@ -6,6 +6,7 @@ import com.simibubi.create.AllShapes;
 import com.simibubi.create.content.kinetics.base.KineticBlock;
 import com.simibubi.create.content.kinetics.simpleRelays.ICogWheel;
 import com.simibubi.create.foundation.block.IBE;
+import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -58,11 +59,6 @@ public class MechanicalMixerBlock extends KineticBlock implements IBE<Mechanical
 	@Override
 	public float getParticleInitialRadius() {
 		return .75f;
-	}
-
-	@Override
-	public SpeedLevel getMinimumRequiredSpeedLevel() {
-		return SpeedLevel.MEDIUM;
 	}
 
 	@Override

@@ -5,6 +5,7 @@ import com.jozufozu.flywheel.api.instance.DynamicInstance;
 import com.jozufozu.flywheel.core.materials.model.ModelData;
 import com.jozufozu.flywheel.util.transform.TransformStack;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityInstance;
 import com.simibubi.create.content.kinetics.base.flwdata.RotatingData;
 import com.simibubi.create.foundation.utility.AngleHelper;
@@ -12,13 +13,13 @@ import com.simibubi.create.foundation.utility.AnimationTickHolder;
 
 import net.minecraft.core.Direction;
 
-public class FlywheelInstance extends KineticBlockEntityInstance<FlywheelBlockEntity> implements DynamicInstance {
+public class FlywheelInstance extends KineticBlockEntityInstance<KineticBlockEntity> implements DynamicInstance {
 
 	protected final RotatingData shaft;
 	protected final ModelData wheel;
 	protected float lastAngle = Float.NaN;
 
-	public FlywheelInstance(MaterialManager materialManager, FlywheelBlockEntity blockEntity) {
+	public FlywheelInstance(MaterialManager materialManager, KineticBlockEntity blockEntity) {
 		super(materialManager, blockEntity);
 
 		shaft = setup(getRotatingMaterial().getModel(shaft())
@@ -26,16 +27,14 @@ public class FlywheelInstance extends KineticBlockEntityInstance<FlywheelBlockEn
 		wheel = getTransformMaterial().getModel(blockState)
 			.createInstance();
 
-		animate(blockEntity.angle);
+		animate(blockEntity.getRenderAngle(AnimationTickHolder.getPartialTicks()));
 	}
 
 	@Override
 	public void beginFrame() {
 
-		float partialTicks = AnimationTickHolder.getPartialTicks();
-
-		float speed = blockEntity.visualSpeed.getValue(partialTicks) * 3 / 10f;
-		float angle = blockEntity.angle + speed * partialTicks;
+		
+		float angle = blockEntity.getRenderAngle(AnimationTickHolder.getPartialTicks());
 
 		if (Math.abs(angle - lastAngle) < 0.001)
 			return;

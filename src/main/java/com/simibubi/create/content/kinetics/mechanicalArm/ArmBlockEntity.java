@@ -106,7 +106,14 @@ public class ArmBlockEntity extends KineticBlockEntity implements ITransformable
 		tooltipWarmup = 15;
 		goggles = false;
 	}
-
+	
+	@Override
+	public float getTorque(float speed) {
+		boolean isRunning = phase == Phase.MOVE_TO_INPUT || phase == Phase.MOVE_TO_OUTPUT;
+		return super.getTorque(speed) + (isRunning ? AllConfigs.server().kinetics.mechanicalArmTorque.getF() : 0) * -Math.signum(speed);
+	}
+	
+	
 	@Override
 	public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
 		super.addBehaviours(behaviours);

@@ -7,7 +7,6 @@ import java.util.function.Supplier;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import com.simibubi.create.content.kinetics.BlockStressValues;
 import com.simibubi.create.foundation.config.ConfigBase;
 
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -62,8 +61,6 @@ public class AllConfigs {
 
 		for (Entry<ModConfig.Type, ConfigBase> pair : CONFIGS.entrySet())
 			context.registerConfig(pair.getKey(), pair.getValue().specification);
-
-		BlockStressValues.registerProvider(context.getActiveNamespace(), server().kinetics.stressValues);
 	}
 
 	@SubscribeEvent

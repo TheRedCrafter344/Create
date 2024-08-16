@@ -74,7 +74,6 @@ public class BeltRenderer extends SafeBlockEntityRenderer<BeltBlockEntity> {
 			PoseStack localTransforms = new PoseStack();
             TransformStack msr = TransformStack.cast(localTransforms);
 			VertexConsumer vb = buffer.getBuffer(RenderType.solid());
-			float renderTick = AnimationTickHolder.getRenderTime(be.getLevel());
 
 			msr.centre()
 					.rotateY(AngleHelper.horizontalAngle(facing) + (upward ? 180 : 0) + (sideways ? 270 : 0))
@@ -100,17 +99,16 @@ public class BeltRenderer extends SafeBlockEntityRenderer<BeltBlockEntity> {
 				SpriteShiftEntry spriteShift = getSpriteShiftEntry(color, diagonal, bottom);
 
 				// UV shift
-				float speed = be.getSpeed();
-				if (speed != 0 || be.color.isPresent()) {
-					float time = renderTick * axisDirection.getStep();
+				float shift = be.getRenderAngle(AnimationTickHolder.getPartialTicks(), 151.12f) * 0.006614f * axisDirection.getStep();
+				if (be.getSpeed() != 0 || be.color.isPresent()) {
 					if (diagonal && (downward ^ alongX) || !sideways && !diagonal && alongX || sideways && axisDirection == AxisDirection.NEGATIVE)
-						speed = -speed;
+						shift = -shift;
 
 					float scrollMult = diagonal ? 3f / 8f : 0.5f;
 
 					float spriteSize = spriteShift.getTarget().getV1() - spriteShift.getTarget().getV0();
 
-					double scroll = speed * time / (31.5 * 16) + (bottom ? 0.5 : 0.0);
+					double scroll = shift + (bottom ? 0.5 : 0.0);
 					scroll = scroll - Math.floor(scroll);
 					scroll = scroll * spriteSize * scrollMult;
 

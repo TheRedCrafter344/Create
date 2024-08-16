@@ -157,15 +157,17 @@ public class AllAdvancements implements DataProvider {
 			.whenItemCollected(AllItems.GOGGLES)
 			.after(PSI)),
 
+		/*
 		STRESSOMETER = create("stressometer", b -> b.icon(AllBlocks.STRESSOMETER)
 			.title("Stress for Nerds")
 			.description("Get an exact readout with the help of Engineer's Goggles and a Stressometer")
 			.after(WRENCH_GOGGLES)),
+*/
 
 		CUCKOO_CLOCK = create("cuckoo_clock", b -> b.icon(AllBlocks.CUCKOO_CLOCK)
 			.title("Is It Time?")
 			.description("Witness your Cuckoo Clock announce bedtime")
-			.after(STRESSOMETER)
+			.after(WRENCH_GOGGLES)
 			.special(NOISY)),
 
 		// Andesite - Expert Branch
@@ -220,12 +222,13 @@ public class AllAdvancements implements DataProvider {
 			.after(MIXER)
 			.special(SECRET)),
 
+		/*
 		STRESSOMETER_MAXED = create("stressometer_maxed", b -> b.icon(AllBlocks.STRESSOMETER)
 			.title("Perfectly Stressed")
 			.description("Get a 100% readout from a Stressometer")
 			.after(MIXER)
 			.special(SECRET)),
-
+*/
 		// Copper - Central Branch
 
 		COPPER = create("copper", b -> b.icon(Items.COPPER_INGOT)

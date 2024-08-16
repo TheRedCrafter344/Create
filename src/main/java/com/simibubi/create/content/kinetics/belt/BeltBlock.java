@@ -22,8 +22,8 @@ import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.content.kinetics.belt.BeltBlockEntity.CasingType;
 import com.simibubi.create.content.kinetics.belt.BeltSlicer.Feedback;
 import com.simibubi.create.content.kinetics.belt.behaviour.TransportedItemStackHandlerBehaviour.TransportedResult;
-import com.simibubi.create.content.kinetics.belt.transport.BeltMovementHandler.TransportedEntityInfo;
 import com.simibubi.create.content.kinetics.belt.transport.BeltTunnelInteractionHandler;
+import com.simibubi.create.content.kinetics.belt.transport.BeltMovementHandler.TransportedEntityInfo;
 import com.simibubi.create.content.logistics.funnel.FunnelBlock;
 import com.simibubi.create.content.logistics.tunnel.BeltTunnelBlock;
 import com.simibubi.create.content.schematics.requirement.ISpecialBlockItemRequirement;
@@ -34,6 +34,7 @@ import com.simibubi.create.foundation.block.ProperWaterloggedBlock;
 import com.simibubi.create.foundation.block.render.MultiPosDestructionHandler;
 import com.simibubi.create.foundation.block.render.ReducedDestroyEffects;
 import com.simibubi.create.foundation.utility.Iterate;
+import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
@@ -122,7 +123,7 @@ public class BeltBlock extends HorizontalKineticBlock
 		return getBlockEntityOptional(world, pos).map(BeltBlockEntity::hasPulley)
 			.orElse(false);
 	}
-
+	
 	@Override
 	public Axis getRotationAxis(BlockState state) {
 		if (state.getValue(SLOPE) == BeltSlope.SIDEWAYS)
@@ -724,5 +725,4 @@ public class BeltBlock extends HorizontalKineticBlock
 			return null;
 		}
 	}
-
 }

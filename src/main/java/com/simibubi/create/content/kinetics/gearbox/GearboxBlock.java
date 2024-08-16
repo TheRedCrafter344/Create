@@ -7,6 +7,7 @@ import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.content.kinetics.base.RotatedPillarKineticBlock;
 import com.simibubi.create.foundation.block.IBE;
+import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -75,4 +76,5 @@ public class GearboxBlock extends RotatedPillarKineticBlock implements IBE<Gearb
 	public BlockEntityType<? extends GearboxBlockEntity> getBlockEntityType() {
 		return AllBlockEntityTypes.GEARBOX.get();
 	}
+	
 }

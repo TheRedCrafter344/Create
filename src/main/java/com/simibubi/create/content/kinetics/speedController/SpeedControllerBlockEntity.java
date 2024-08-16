@@ -5,9 +5,10 @@ import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.simibubi.create.AllBlocks;
+import com.simibubi.create.Create;
 import com.simibubi.create.compat.computercraft.AbstractComputerBehaviour;
 import com.simibubi.create.compat.computercraft.ComputerCraftProxy;
-import com.simibubi.create.content.kinetics.RotationPropagator;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.content.kinetics.motor.KineticScrollValueBehaviour;
 import com.simibubi.create.content.kinetics.simpleRelays.CogWheelBlock;
@@ -22,6 +23,8 @@ import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Direction.Axis;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -36,9 +39,37 @@ public class SpeedControllerBlockEntity extends KineticBlockEntity {
 
 	boolean hasBracket;
 
+	public static final float MIN_MODIFIER = 0.1f;
+	public static final float MAX_MODIFIER = 10f;
+	private float modifier = 1;
+	
 	public SpeedControllerBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
 		hasBracket = false;
+	}
+
+	@Override
+	public void tick() {
+		if (hasNetwork() && !level.isClientSide) {
+			float targetSpeed = this.targetSpeed.getValue();
+			float prevModifier = modifier;
+			float newModifier = targetSpeed / getSpeed();
+			if (newModifier > 0) {
+				newModifier = Mth.clamp(newModifier, MIN_MODIFIER, MAX_MODIFIER);
+			} else {
+				newModifier = Mth.clamp(newModifier, -MAX_MODIFIER, -MIN_MODIFIER);
+			}
+			Create.LOGGER.info("prev: " + prevModifier);
+			Create.LOGGER.info("new: " + newModifier);
+			if (Math.abs(prevModifier - newModifier) > 0.01f) {
+				modifier = newModifier;
+				detachKinetics();
+				attachKinetics();
+				
+				Create.LOGGER.info("nigga");
+			} 
+		}
+		super.tick();
 	}
 
 	@Override
@@ -56,70 +87,10 @@ public class SpeedControllerBlockEntity extends KineticBlockEntity {
 			this, new ControllerValueBoxTransform());
 		targetSpeed.between(-max, max);
 		targetSpeed.value = DEFAULT_SPEED;
-		targetSpeed.withCallback(i -> this.updateTargetRotation());
 		behaviours.add(targetSpeed);
 		behaviours.add(computerBehaviour = ComputerCraftProxy.behaviour(this));
 
 		registerAwardables(behaviours, AllAdvancements.SPEED_CONTROLLER);
-	}
-
-	private void updateTargetRotation() {
-		if (hasNetwork())
-			getOrCreateNetwork().remove(this);
-		RotationPropagator.handleRemoved(level, worldPosition, this);
-		removeSource();
-		attachKinetics();
-
-		if (isCogwheelPresent() && getSpeed() != 0)
-			award(AllAdvancements.SPEED_CONTROLLER);
-	}
-
-	public static float getConveyedSpeed(KineticBlockEntity cogWheel, KineticBlockEntity speedControllerIn,
-		boolean targetingController) {
-		if (!(speedControllerIn instanceof SpeedControllerBlockEntity))
-			return 0;
-
-		float speed = speedControllerIn.getTheoreticalSpeed();
-		float wheelSpeed = cogWheel.getTheoreticalSpeed();
-		float desiredOutputSpeed = getDesiredOutputSpeed(cogWheel, speedControllerIn, targetingController);
-
-		float compareSpeed = targetingController ? speed : wheelSpeed;
-		if (desiredOutputSpeed >= 0 && compareSpeed >= 0)
-			return Math.max(desiredOutputSpeed, compareSpeed);
-		if (desiredOutputSpeed < 0 && compareSpeed < 0)
-			return Math.min(desiredOutputSpeed, compareSpeed);
-
-		return desiredOutputSpeed;
-	}
-
-	public static float getDesiredOutputSpeed(KineticBlockEntity cogWheel, KineticBlockEntity speedControllerIn,
-		boolean targetingController) {
-		SpeedControllerBlockEntity speedController = (SpeedControllerBlockEntity) speedControllerIn;
-		float targetSpeed = speedController.targetSpeed.getValue();
-		float speed = speedControllerIn.getTheoreticalSpeed();
-		float wheelSpeed = cogWheel.getTheoreticalSpeed();
-
-		if (targetSpeed == 0)
-			return 0;
-		if (targetingController && wheelSpeed == 0)
-			return 0;
-		if (!speedController.hasSource()) {
-			if (targetingController)
-				return targetSpeed;
-			return 0;
-		}
-
-		boolean wheelPowersController = speedController.source.equals(cogWheel.getBlockPos());
-
-		if (wheelPowersController) {
-			if (targetingController)
-				return targetSpeed;
-			return wheelSpeed;
-		}
-
-		if (targetingController)
-			return speed;
-		return targetSpeed;
 	}
 
 	public void updateBracket() {
@@ -148,6 +119,26 @@ public class SpeedControllerBlockEntity extends KineticBlockEntity {
 		computerBehaviour.removePeripheral();
 	}
 
+	@Override
+	public boolean isCustomConnection(KineticBlockEntity other, BlockState from, BlockState to) {
+		if (!ICogWheel.isLargeCog(to) || !AllBlocks.ROTATION_SPEED_CONTROLLER.has(from))
+			return false;
+		if (!other.getBlockPos().equals(getBlockPos().above()))
+			return false;
+		Axis axis = to.getValue(CogWheelBlock.AXIS);
+		if (axis.isVertical())
+			return false;
+		if (from.getValue(SpeedControllerBlock.HORIZONTAL_AXIS) == axis)
+			return false;
+		return true;
+	}
+	
+	@Override
+	public float propagateRotationTo(KineticBlockEntity target, BlockState stateFrom, BlockState stateTo, BlockPos diff, boolean connectedViaAxes, boolean connectedViaCogs) {
+		if(isCustomConnection(target, stateFrom, stateTo)) return modifier;
+		return 0;
+	}
+	
 	private class ControllerValueBoxTransform extends ValueBoxTransform.Sided {
 
 		@Override

@@ -1,4 +1,4 @@
-package com.simibubi.create.content.kinetics.crafter;
+package com.simibubi.create.content.kinetics.base;
 
 import java.util.function.Supplier;
 
@@ -7,9 +7,8 @@ import com.jozufozu.flywheel.api.MaterialManager;
 import com.jozufozu.flywheel.util.transform.TransformStack;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.AllPartialModels;
-import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
-import com.simibubi.create.content.kinetics.base.SingleRotatingInstance;
 import com.simibubi.create.content.kinetics.base.flwdata.RotatingData;
+import com.simibubi.create.content.kinetics.crafter.MechanicalCrafterBlock;
 
 import net.minecraft.core.Direction;
 

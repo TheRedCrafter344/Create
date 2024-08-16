@@ -61,7 +61,6 @@ public class ChainGearshiftBlockEntity extends KineticBlockEntity {
 
 	protected void analogSignalChanged(int newSignal) {
 		detachKinetics();
-		removeSource();
 		signal = newSignal;
 		attachKinetics();
 	}

@@ -1,4 +1,4 @@
-// 1.20.1	2023-09-20T19:40:25.4471912	Create's Standard Recipes
+// 1.20.1	2024-08-14T23:45:14.7362758	Create's Standard Recipes
 a8cc4af26f6c7c45a9eef12e92af1452fe042454 data/create/advancements/recipes/combat/crafting/appliances/netherite_backtank.json
 2c2639c7b307ee7c7a4e97e5efebf496788998ad data/create/advancements/recipes/combat/crafting/appliances/netherite_backtank_from_netherite.json
 81dcf0cb1aa99e39bc7d1a386e07cad4cee7d8b9 data/create/advancements/recipes/combat/crafting/appliances/netherite_diving_boots.json
@@ -130,13 +130,11 @@ b7b1cddd6964faf54efa794aa6697c16855c968c data/create/advancements/recipes/misc/c
 28b94c9f030cd0f4c4c68f2c6123566066af4a0f data/create/advancements/recipes/misc/crafting/kinetics/smart_chute.json
 4f991a309952d3e1dc5dc3814fdc1f674bf09e41 data/create/advancements/recipes/misc/crafting/kinetics/smart_fluid_pipe.json
 a6dfc4c646a359ebfb4fc839bde6ebcde54ae1a6 data/create/advancements/recipes/misc/crafting/kinetics/speedometer.json
-a48f86ff4efc8f322feef41db862a39e681043b9 data/create/advancements/recipes/misc/crafting/kinetics/speedometerfrom_conversion.json
 d2315557fb6d9c5086c8801033b6562c775e35e6 data/create/advancements/recipes/misc/crafting/kinetics/spout.json
 af6f20b7eed6052c1455018794bdc5d6afa12d0b data/create/advancements/recipes/misc/crafting/kinetics/steam_engine.json
 31322b2dd244d9a45e2850cbb97a6a894ac92bb0 data/create/advancements/recipes/misc/crafting/kinetics/steam_whistle.json
 0123b8926c6e37551b8e3fdb72f44da181cd4e03 data/create/advancements/recipes/misc/crafting/kinetics/sticker.json
 c510077aaf3b7b8cea230578f835bf4e679089bf data/create/advancements/recipes/misc/crafting/kinetics/sticky_mechanical_piston.json
-8e2048e5e795b971ede965d56b2eb46eb71e106e data/create/advancements/recipes/misc/crafting/kinetics/stressometerfrom_conversion.json
 fc9a10e60637cb2da98825a1d79359431fdd8e9b data/create/advancements/recipes/misc/crafting/kinetics/super_glue.json
 32086aec6acc2e236ccd1bdcad8077355cfbc801 data/create/advancements/recipes/misc/crafting/kinetics/track_observer.json
 4c109779fa881db7589ced1b7816b48700ad9d17 data/create/advancements/recipes/misc/crafting/kinetics/track_observer_from_other_plates.json
@@ -358,13 +356,11 @@ b80b9bf1a36aab395cdd6200bcd3497c8e693ce1 data/create/recipes/crafting/kinetics/s
 a1d7e73399044cab19fd564d71d5fdfa754181ae data/create/recipes/crafting/kinetics/smart_chute.json
 31698b810c00c5bff2b213d465614bbde2cae2aa data/create/recipes/crafting/kinetics/smart_fluid_pipe.json
 001868b8959c6d1583daa08ce7098a0bda349d08 data/create/recipes/crafting/kinetics/speedometer.json
-fcd251937ad8ec78213d8d4277fefff3ae998061 data/create/recipes/crafting/kinetics/speedometerfrom_conversion.json
 4549864bccf0fafeb190fe0fc0427c1feb6602cb data/create/recipes/crafting/kinetics/spout.json
 c0ae41dc34149563aafca9340213f4b255e5f6ea data/create/recipes/crafting/kinetics/steam_engine.json
 dcecf0c7a28e1760277a191c2e8230054c5c830f data/create/recipes/crafting/kinetics/steam_whistle.json
 87c25c7aa34b699586696344c83cdc181a93761c data/create/recipes/crafting/kinetics/sticker.json
 19cc465a5e738785e91e2663f1b0c0e03f656b3a data/create/recipes/crafting/kinetics/sticky_mechanical_piston.json
-27879de3fe0dbea5e4b6cec110459ce01cfa2556 data/create/recipes/crafting/kinetics/stressometerfrom_conversion.json
 1fd12eac975ce2ffb6212e25f2309ad08537a4b6 data/create/recipes/crafting/kinetics/super_glue.json
 ae836d3103b16bb7084109c4d25295f0a3bc6f7c data/create/recipes/crafting/kinetics/track_observer.json
 1747771e1eb570c0cfdc97681d8b9d0ccb1db73d data/create/recipes/crafting/kinetics/track_observer_from_other_plates.json

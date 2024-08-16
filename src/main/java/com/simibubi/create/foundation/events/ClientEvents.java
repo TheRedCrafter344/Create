@@ -26,7 +26,6 @@ import com.simibubi.create.content.equipment.goggles.GoggleOverlayRenderer;
 import com.simibubi.create.content.equipment.toolbox.ToolboxHandlerClient;
 import com.simibubi.create.content.equipment.zapper.ZapperItem;
 import com.simibubi.create.content.equipment.zapper.terrainzapper.WorldshaperRenderHandler;
-import com.simibubi.create.content.kinetics.KineticDebugger;
 import com.simibubi.create.content.kinetics.belt.item.BeltConnectorHandler;
 import com.simibubi.create.content.kinetics.fan.AirCurrent;
 import com.simibubi.create.content.kinetics.mechanicalArm.ArmInteractionPointHandler;
@@ -148,7 +147,6 @@ public class ClientEvents {
 		WorldshaperRenderHandler.tick();
 		CouplingHandlerClient.tick();
 		CouplingRenderer.tickDebugModeRenders();
-		KineticDebugger.tick();
 		ExtendoGripRenderHandler.tick();
 		// CollisionDebugger.tick();
 		ArmInteractionPointHandler.tick();
@@ -171,6 +169,8 @@ public class ClientEvents {
 		CreateClient.VALUE_SETTINGS_HANDLER.tick();
 		ScrollValueHandler.tick();
 		NetheriteBacktankFirstPersonRenderer.clientTick();
+		
+		Create.KINETICS_MANAGER.tickClientNetworks(world);
 	}
 
 	@SubscribeEvent

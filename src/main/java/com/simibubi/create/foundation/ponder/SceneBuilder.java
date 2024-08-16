@@ -12,7 +12,6 @@ import org.joml.Vector3f;
 import com.simibubi.create.content.contraptions.actors.trainControls.ControlsBlock;
 import com.simibubi.create.content.contraptions.glue.SuperGlueItem;
 import com.simibubi.create.content.fluids.pump.PumpBlockEntity;
-import com.simibubi.create.content.kinetics.base.IRotate.SpeedLevel;
 import com.simibubi.create.content.kinetics.base.KineticBlock;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.content.kinetics.base.RotationIndicatorParticleData;
@@ -313,11 +312,9 @@ public class SceneBuilder {
 				KineticBlock kb = (KineticBlock) blockState.getBlock();
 				Axis rotationAxis = kb.getRotationAxis(blockState);
 
-				float speed = kbe.getTheoreticalSpeed();
-				SpeedLevel speedLevel = SpeedLevel.of(speed);
-				int color = direction ? speed > 0 ? 0xeb5e0b : 0x1687a7 : speedLevel.getColor();
-				int particleSpeed = speedLevel.getParticleSpeed();
-				particleSpeed *= Math.signum(speed);
+				float speed = kbe.getSpeed();
+				int color = direction ? 0xeb5e0b : 0x1687a7 ;
+				int particleSpeed = (int) (kbe.getSpeed() / 16);
 
 				Vec3 location = VecHelper.getCenterOf(displayPos);
 				RotationIndicatorParticleData particleData = new RotationIndicatorParticleData(color, particleSpeed,
