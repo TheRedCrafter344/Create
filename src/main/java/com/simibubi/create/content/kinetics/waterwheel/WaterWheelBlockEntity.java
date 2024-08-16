@@ -12,6 +12,7 @@ import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.fluid.FluidHelper;
 import com.simibubi.create.foundation.utility.Iterate;
+import com.simibubi.create.foundation.utility.Lang;
 import com.simibubi.create.foundation.utility.VecHelper;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 
@@ -22,6 +23,7 @@ import net.minecraft.core.Direction.AxisDirection;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.network.chat.Component;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
@@ -241,6 +243,25 @@ public class WaterWheelBlockEntity extends KineticBlockEntity {
 			power = Math.max(generatedPower - slope * (speed - powerLossAt), -AllConfigs.server().kinetics.waterwheelRemovedPower.getF() * getSize());
 		}
 		return power / speed + super.getTorque(speed);
+	}
+	
+	@Override
+	public float getInertia() {
+		return super.getInertia() * getSize() * getSize();
+	}
+	
+	@Override
+	public boolean addToGoggleTooltip(List<Component> tooltip, boolean isSneaking) {
+		if(network == null) {
+			Lang.text("Not in network").forGoggles(tooltip);
+		} else {
+			Lang.text("Network ID: " + network).forGoggles(tooltip);
+			Lang.text("Speed: " + getSpeed()).forGoggles(tooltip);
+			Lang.text("Speed Multiplier: " + speedMultiplier).forGoggles(tooltip);
+			Lang.text("Network Effective Inertia: " + getOrCreateClientNetwork().getEffectiveInertia()).forGoggles(tooltip);
+		}
+		Lang.text("Flow level: " + flowScore).forGoggles(tooltip);
+		return true;
 	}
 }
 	
