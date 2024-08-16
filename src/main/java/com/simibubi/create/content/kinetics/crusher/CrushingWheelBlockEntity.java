@@ -2,11 +2,13 @@ package com.simibubi.create.content.kinetics.crusher;
 
 import java.util.List;
 
+import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllDamageTypes;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.utility.Iterate;
+import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -40,6 +42,21 @@ public class CrushingWheelBlockEntity extends KineticBlockEntity {
 		fixControllers();
 	}
 
+	@Override
+	public float getTorque(float speed) {
+		CrushingWheelControllerBlockEntity controller = null;
+		for(Direction d : Iterate.directions) {
+			if(getBlockState().getValue(CrushingWheelBlock.AXIS) == d.getAxis()) continue;
+			BlockPos controllerPos = getBlockPos().relative(d);
+			if(AllBlocks.CRUSHING_WHEEL_CONTROLLER.has(getLevel().getBlockState(controllerPos))) {
+				controller = (CrushingWheelControllerBlockEntity) getLevel().getBlockEntity(controllerPos);
+				break;
+			}
+		}
+		boolean isRunning = controller != null && controller.isOccupied();
+		return super.getTorque(speed) + (isRunning ? AllConfigs.server().kinetics.crusherTorque.getF() : 0) * -Math.signum(speed);
+	}
+	
 	public void fixControllers() {
 		for (Direction d : Iterate.directions)
 			((CrushingWheelBlock) getBlockState().getBlock()).updateControllers(getBlockState(), getLevel(), getBlockPos(),

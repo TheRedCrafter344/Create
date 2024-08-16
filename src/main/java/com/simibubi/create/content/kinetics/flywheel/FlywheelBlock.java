@@ -2,8 +2,10 @@ package com.simibubi.create.content.kinetics.flywheel;
 
 import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllShapes;
+import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.content.kinetics.base.RotatedPillarKineticBlock;
 import com.simibubi.create.foundation.block.IBE;
+import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -16,15 +18,15 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class FlywheelBlock extends RotatedPillarKineticBlock implements IBE<FlywheelBlockEntity> {
+public class FlywheelBlock extends RotatedPillarKineticBlock implements IBE<KineticBlockEntity> {
 
 	public FlywheelBlock(Properties properties) {
 		super(properties);
 	}
 
 	@Override
-	public Class<FlywheelBlockEntity> getBlockEntityClass() {
-		return FlywheelBlockEntity.class;
+	public Class<KineticBlockEntity> getBlockEntityClass() {
+		return KineticBlockEntity.class;
 	}
 	
 	@Override
@@ -38,7 +40,7 @@ public class FlywheelBlock extends RotatedPillarKineticBlock implements IBE<Flyw
 	}
 
 	@Override
-	public BlockEntityType<? extends FlywheelBlockEntity> getBlockEntityType() {
+	public BlockEntityType<? extends KineticBlockEntity> getBlockEntityType() {
 		return AllBlockEntityTypes.FLYWHEEL.get();
 	}
 	

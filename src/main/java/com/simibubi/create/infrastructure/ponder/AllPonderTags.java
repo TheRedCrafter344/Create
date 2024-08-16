@@ -303,7 +303,7 @@ public class AllPonderTags {
 			.add(AllBlocks.DISPLAY_LINK)
 			.add(AllBlocks.BRASS_TUNNEL)
 			.add(AllBlocks.CUCKOO_CLOCK)
-			.add(AllBlocks.STRESSOMETER)
+			//.add(AllBlocks.STRESSOMETER)
 			.add(AllBlocks.SPEEDOMETER)
 			.add(AllBlocks.FLUID_TANK)
 			.add(AllItems.BELT_CONNECTOR)

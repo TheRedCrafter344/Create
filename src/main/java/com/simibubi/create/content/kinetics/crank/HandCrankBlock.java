@@ -50,10 +50,6 @@ public class HandCrankBlock extends DirectionalKineticBlock
 		super.createBlockStateDefinition(builder.add(WATERLOGGED));
 	}
 
-	public int getRotationSpeed() {
-		return 32;
-	}
-
 	@Override
 	public RenderShape getRenderShape(BlockState state) {
 		return RenderShape.ENTITYBLOCK_ANIMATED;
@@ -68,7 +64,7 @@ public class HandCrankBlock extends DirectionalKineticBlock
 		withBlockEntityDo(worldIn, pos, be -> be.turn(player.isShiftKeyDown()));
 		if (!player.getItemInHand(handIn)
 			.is(AllItems.EXTENDO_GRIP.get()))
-			player.causeFoodExhaustion(getRotationSpeed() * AllConfigs.server().kinetics.crankHungerMultiplier.getF());
+			player.causeFoodExhaustion(32 * AllConfigs.server().kinetics.handcrankHungerMultiplier.getF());
 
 		if (player.getFoodData()
 			.getFoodLevel() == 0)

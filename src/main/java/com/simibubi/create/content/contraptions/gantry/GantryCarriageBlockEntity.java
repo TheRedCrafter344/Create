@@ -123,9 +123,9 @@ public class GantryCarriageBlockEntity extends KineticBlockEntity implements IDi
 		AllSoundEvents.CONTRAPTION_ASSEMBLE.playOnServer(level, worldPosition);
 		level.addFreshEntity(movedContraption);
 
-		if (shaftBE.sequenceContext != null
-			&& shaftBE.sequenceContext.instruction() == SequencerInstructions.TURN_DISTANCE)
-			movedContraption.limitMovement(shaftBE.sequenceContext.getEffectiveValue(shaftBE.getTheoreticalSpeed()));
+		//if (shaftBE.sequenceContext != null
+		//	&& shaftBE.sequenceContext.instruction() == SequencerInstructions.TURN_DISTANCE)
+		//	movedContraption.limitMovement(shaftBE.sequenceContext.getEffectiveValue(shaftBE.getTheoreticalSpeed()));
 	}
 
 	@Override

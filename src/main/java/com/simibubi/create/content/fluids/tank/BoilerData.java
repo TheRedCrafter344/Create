@@ -12,6 +12,7 @@ import com.simibubi.create.Create;
 import com.simibubi.create.content.decoration.steamWhistle.WhistleBlock;
 import com.simibubi.create.content.decoration.steamWhistle.WhistleBlockEntity;
 import com.simibubi.create.content.kinetics.BlockStressValues;
+import com.simibubi.create.content.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.content.kinetics.steamEngine.SteamEngineBlock;
 import com.simibubi.create.foundation.advancement.AdvancementBehaviour;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
@@ -158,8 +159,8 @@ public class BoilerData {
 			return true;
 
 		int boilerLevel = Math.min(activeHeat, Math.min(maxHeatForWater, maxHeatForSize));
-		double totalSU = getEngineEfficiency(boilerSize) * 16 * Math.max(boilerLevel, attachedEngines)
-			* BlockStressValues.getCapacity(AllBlocks.STEAM_ENGINE.get());
+		//double totalSU = getEngineEfficiency(boilerSize) * 16 * Math.max(boilerLevel, attachedEngines)
+		//	* BlockStressValues.getCapacity(AllBlocks.STEAM_ENGINE.get());
 
 		tooltip.add(Components.immutableEmpty());
 
@@ -183,13 +184,13 @@ public class BoilerData {
 			.style(ChatFormatting.GRAY)
 			.forGoggles(tooltip);
 
-		Lang.number(totalSU)
-			.translate("generic.unit.stress")
-			.style(ChatFormatting.AQUA)
-			.space()
-			.add((attachedEngines == 1 ? Lang.translate("boiler.via_one_engine")
-				: Lang.translate("boiler.via_engines", attachedEngines)).style(ChatFormatting.DARK_GRAY))
-			.forGoggles(tooltip, 1);
+		//Lang.number(totalSU)
+		//	.translate("generic.unit.stress")
+		//	.style(ChatFormatting.AQUA)
+		//	.space()
+		//	.add((attachedEngines == 1 ? Lang.translate("boiler.via_one_engine")
+		//		: Lang.translate("boiler.via_engines", attachedEngines)).style(ChatFormatting.DARK_GRAY))
+		//	.forGoggles(tooltip, 1);
 
 		return true;
 	}

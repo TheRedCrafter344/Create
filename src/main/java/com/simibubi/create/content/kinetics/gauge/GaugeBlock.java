@@ -11,6 +11,7 @@ import com.simibubi.create.foundation.utility.Iterate;
 import com.simibubi.create.foundation.utility.Lang;
 import com.simibubi.create.foundation.utility.VecHelper;
 import com.simibubi.create.foundation.utility.worldWrappers.WrappedWorld;
+import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -50,9 +51,9 @@ public class GaugeBlock extends DirectionalAxisKineticBlock implements IBE<Gauge
 		return new GaugeBlock(properties, Type.SPEED);
 	}
 
-	public static GaugeBlock stress(Properties properties) {
+	/*public static GaugeBlock stress(Properties properties) {
 		return new GaugeBlock(properties, Type.STRESS);
-	}
+	}*/
 
 	protected GaugeBlock(Properties properties, Type type) {
 		super(properties);
@@ -188,6 +189,6 @@ public class GaugeBlock extends DirectionalAxisKineticBlock implements IBE<Gauge
 
 	@Override
 	public BlockEntityType<? extends GaugeBlockEntity> getBlockEntityType() {
-		return type == Type.SPEED ? AllBlockEntityTypes.SPEEDOMETER.get() : AllBlockEntityTypes.STRESSOMETER.get();
+		return AllBlockEntityTypes.SPEEDOMETER.get();
 	}
 }

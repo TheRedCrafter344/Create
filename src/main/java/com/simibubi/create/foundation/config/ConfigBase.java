@@ -150,8 +150,13 @@ public abstract class ConfigBase {
 
 		@Override
 		public void register(Builder builder) {
-			if (depth > groupDepth)
-				builder.pop(depth - groupDepth);
+			if (depth > groupDepth) {
+				try {
+					builder.pop(depth - groupDepth);
+				} catch(IllegalArgumentException e) {
+					e.printStackTrace();
+				}
+			}
 			depth = groupDepth;
 			addComments(builder, comment);
 			builder.push(getName());

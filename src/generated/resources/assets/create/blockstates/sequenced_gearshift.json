@@ -1,100 +1,142 @@
 {
   "variants": {
-    "axis=x,state=0,vertical=false": {
+    "facing=down,state=0": {
       "model": "create:block/sequenced_gearshift/idle",
-      "y": 90
+      "x": 270
     },
-    "axis=x,state=0,vertical=true": {
+    "facing=down,state=1": {
+      "model": "create:block/sequenced_gearshift/seq_1",
+      "x": 270
+    },
+    "facing=down,state=2": {
+      "model": "create:block/sequenced_gearshift/seq_2",
+      "x": 270
+    },
+    "facing=down,state=3": {
+      "model": "create:block/sequenced_gearshift/seq_3",
+      "x": 270
+    },
+    "facing=down,state=4": {
+      "model": "create:block/sequenced_gearshift/seq_4",
+      "x": 270
+    },
+    "facing=down,state=5": {
+      "model": "create:block/sequenced_gearshift/seq_5",
+      "x": 270
+    },
+    "facing=east,state=0": {
       "model": "create:block/sequenced_gearshift/idle",
-      "x": 90,
-      "y": 90
+      "y": 270
     },
-    "axis=x,state=1,vertical=false": {
+    "facing=east,state=1": {
       "model": "create:block/sequenced_gearshift/seq_1",
-      "y": 90
+      "y": 270
     },
-    "axis=x,state=1,vertical=true": {
-      "model": "create:block/sequenced_gearshift/seq_1",
-      "x": 90,
-      "y": 90
-    },
-    "axis=x,state=2,vertical=false": {
+    "facing=east,state=2": {
       "model": "create:block/sequenced_gearshift/seq_2",
-      "y": 90
+      "y": 270
     },
-    "axis=x,state=2,vertical=true": {
-      "model": "create:block/sequenced_gearshift/seq_2",
-      "x": 90,
-      "y": 90
-    },
-    "axis=x,state=3,vertical=false": {
+    "facing=east,state=3": {
       "model": "create:block/sequenced_gearshift/seq_3",
-      "y": 90
+      "y": 270
     },
-    "axis=x,state=3,vertical=true": {
-      "model": "create:block/sequenced_gearshift/seq_3",
-      "x": 90,
-      "y": 90
-    },
-    "axis=x,state=4,vertical=false": {
+    "facing=east,state=4": {
       "model": "create:block/sequenced_gearshift/seq_4",
-      "y": 90
+      "y": 270
     },
-    "axis=x,state=4,vertical=true": {
-      "model": "create:block/sequenced_gearshift/seq_4",
-      "x": 90,
-      "y": 90
-    },
-    "axis=x,state=5,vertical=false": {
+    "facing=east,state=5": {
       "model": "create:block/sequenced_gearshift/seq_5",
-      "y": 90
+      "y": 270
     },
-    "axis=x,state=5,vertical=true": {
-      "model": "create:block/sequenced_gearshift/seq_5",
-      "x": 90,
-      "y": 90
-    },
-    "axis=z,state=0,vertical=false": {
+    "facing=north,state=0": {
       "model": "create:block/sequenced_gearshift/idle"
     },
-    "axis=z,state=0,vertical=true": {
+    "facing=north,state=1": {
+      "model": "create:block/sequenced_gearshift/seq_1"
+    },
+    "facing=north,state=2": {
+      "model": "create:block/sequenced_gearshift/seq_2"
+    },
+    "facing=north,state=3": {
+      "model": "create:block/sequenced_gearshift/seq_3"
+    },
+    "facing=north,state=4": {
+      "model": "create:block/sequenced_gearshift/seq_4"
+    },
+    "facing=north,state=5": {
+      "model": "create:block/sequenced_gearshift/seq_5"
+    },
+    "facing=south,state=0": {
+      "model": "create:block/sequenced_gearshift/idle",
+      "y": 180
+    },
+    "facing=south,state=1": {
+      "model": "create:block/sequenced_gearshift/seq_1",
+      "y": 180
+    },
+    "facing=south,state=2": {
+      "model": "create:block/sequenced_gearshift/seq_2",
+      "y": 180
+    },
+    "facing=south,state=3": {
+      "model": "create:block/sequenced_gearshift/seq_3",
+      "y": 180
+    },
+    "facing=south,state=4": {
+      "model": "create:block/sequenced_gearshift/seq_4",
+      "y": 180
+    },
+    "facing=south,state=5": {
+      "model": "create:block/sequenced_gearshift/seq_5",
+      "y": 180
+    },
+    "facing=up,state=0": {
       "model": "create:block/sequenced_gearshift/idle",
       "x": 90
     },
-    "axis=z,state=1,vertical=false": {
-      "model": "create:block/sequenced_gearshift/seq_1"
-    },
-    "axis=z,state=1,vertical=true": {
+    "facing=up,state=1": {
       "model": "create:block/sequenced_gearshift/seq_1",
       "x": 90
     },
-    "axis=z,state=2,vertical=false": {
-      "model": "create:block/sequenced_gearshift/seq_2"
-    },
-    "axis=z,state=2,vertical=true": {
+    "facing=up,state=2": {
       "model": "create:block/sequenced_gearshift/seq_2",
       "x": 90
     },
-    "axis=z,state=3,vertical=false": {
-      "model": "create:block/sequenced_gearshift/seq_3"
-    },
-    "axis=z,state=3,vertical=true": {
+    "facing=up,state=3": {
       "model": "create:block/sequenced_gearshift/seq_3",
       "x": 90
     },
-    "axis=z,state=4,vertical=false": {
-      "model": "create:block/sequenced_gearshift/seq_4"
-    },
-    "axis=z,state=4,vertical=true": {
+    "facing=up,state=4": {
       "model": "create:block/sequenced_gearshift/seq_4",
       "x": 90
     },
-    "axis=z,state=5,vertical=false": {
-      "model": "create:block/sequenced_gearshift/seq_5"
-    },
-    "axis=z,state=5,vertical=true": {
+    "facing=up,state=5": {
       "model": "create:block/sequenced_gearshift/seq_5",
       "x": 90
+    },
+    "facing=west,state=0": {
+      "model": "create:block/sequenced_gearshift/idle",
+      "y": 90
+    },
+    "facing=west,state=1": {
+      "model": "create:block/sequenced_gearshift/seq_1",
+      "y": 90
+    },
+    "facing=west,state=2": {
+      "model": "create:block/sequenced_gearshift/seq_2",
+      "y": 90
+    },
+    "facing=west,state=3": {
+      "model": "create:block/sequenced_gearshift/seq_3",
+      "y": 90
+    },
+    "facing=west,state=4": {
+      "model": "create:block/sequenced_gearshift/seq_4",
+      "y": 90
+    },
+    "facing=west,state=5": {
+      "model": "create:block/sequenced_gearshift/seq_5",
+      "y": 90
     }
   }
 }

@@ -2,7 +2,6 @@ package com.simibubi.create.infrastructure.ponder;
 
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
-import com.simibubi.create.content.kinetics.base.IRotate.SpeedLevel;
 import com.simibubi.create.content.kinetics.base.RotationIndicatorParticleData;
 import com.simibubi.create.foundation.item.ItemHelper;
 import com.simibubi.create.foundation.ponder.ElementLink;
@@ -181,7 +180,7 @@ public class DebugScenes {
 		Vec3 emitterPos = util.vector.of(2.5, 2.25, 2.5);
 		Emitter emitter = Emitter.simple(ParticleTypes.LAVA, util.vector.of(0, .1, 0));
 		Emitter rotation =
-			Emitter.simple(new RotationIndicatorParticleData(SpeedLevel.MEDIUM.getColor(), 12, 1, 1, 20, 'Y'),
+			Emitter.simple(new RotationIndicatorParticleData(0x2f2f2f, 12, 1, 1, 20, 'Y'),
 				util.vector.of(0, .1, 0));
 
 		scene.overlay.showText(20)

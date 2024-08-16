@@ -57,6 +57,11 @@ public class MechanicalMixerBlockEntity extends BasinOperatingBlockEntity {
 		super(type, pos, state);
 	}
 
+	@Override
+	public float getTorque(float speed) {
+		return super.getTorque(speed) + (running ? AllConfigs.server().kinetics.mixerTorque.getF() : 0) * -Math.signum(speed);
+	}
+	
 	public float getRenderedHeadOffset(float partialTicks) {
 		int localTick;
 		float offset = 0;
@@ -309,6 +314,11 @@ public class MechanicalMixerBlockEntity extends BasinOperatingBlockEntity {
 			return;
 		if (runningTicks == 20)
 			AllSoundEvents.MIXING.playAt(level, worldPosition, .75f, 1, true);
+	}
+
+	@Override
+	protected boolean isSpeedRequirementFulfilled() {
+		return Math.abs(getSpeed()) > 64;
 	}
 
 }

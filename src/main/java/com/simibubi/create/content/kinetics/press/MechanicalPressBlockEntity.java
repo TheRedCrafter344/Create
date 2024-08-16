@@ -51,6 +51,11 @@ public class MechanicalPressBlockEntity extends BasinOperatingBlockEntity implem
 	}
 
 	@Override
+	public float getTorque(float speed) {
+		return super.getTorque(speed) + (pressingBehaviour.running ? AllConfigs.server().kinetics.pressTorque.getF() : 0) * -Math.signum(speed);
+	}
+	
+	@Override
 	protected AABB createRenderBoundingBox() {
 		return new AABB(worldPosition).expandTowards(0, -1.5, 0)
 			.expandTowards(0, 1, 0);
@@ -248,6 +253,11 @@ public class MechanicalPressBlockEntity extends BasinOperatingBlockEntity implem
 	@Override
 	protected Optional<CreateAdvancement> getProcessedRecipeTrigger() {
 		return Optional.of(AllAdvancements.COMPACTING);
+	}
+
+	@Override
+	protected boolean isSpeedRequirementFulfilled() {
+		return true;
 	}
 
 }

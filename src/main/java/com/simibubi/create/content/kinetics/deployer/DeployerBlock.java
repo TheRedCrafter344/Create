@@ -15,6 +15,7 @@ import com.simibubi.create.foundation.block.IBE;
 import com.simibubi.create.foundation.placement.IPlacementHelper;
 import com.simibubi.create.foundation.placement.PlacementHelpers;
 import com.simibubi.create.foundation.placement.PlacementOffset;
+import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
@@ -204,5 +205,5 @@ public class DeployerBlock extends DirectionalAxisKineticBlock implements IBE<De
 		}
 
 	}
-
+	
 }

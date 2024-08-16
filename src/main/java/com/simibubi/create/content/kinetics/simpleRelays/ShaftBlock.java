@@ -13,6 +13,7 @@ import com.simibubi.create.foundation.placement.IPlacementHelper;
 import com.simibubi.create.foundation.placement.PlacementHelpers;
 import com.simibubi.create.foundation.placement.PlacementOffset;
 import com.simibubi.create.foundation.placement.PoleHelper;
+import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
@@ -81,6 +82,7 @@ public class ShaftBlock extends AbstractSimpleShaftBlock implements EncasableBlo
 		if (result.consumesAction())
 			return result;
 
+		
 		if (AllBlocks.METAL_GIRDER.isIn(heldItem) && state.getValue(AXIS) != Axis.Y) {
 			KineticBlockEntity.switchToBlockState(world, pos, AllBlocks.METAL_GIRDER_ENCASED_SHAFT.getDefaultState()
 				.setValue(WATERLOGGED, state.getValue(WATERLOGGED))
@@ -92,6 +94,7 @@ public class ShaftBlock extends AbstractSimpleShaftBlock implements EncasableBlo
 			}
 			return InteractionResult.SUCCESS;
 		}
+
 
 		IPlacementHelper helper = PlacementHelpers.get(placementHelperId);
 		if (helper.matchesItem(heldItem))
@@ -133,4 +136,5 @@ public class ShaftBlock extends AbstractSimpleShaftBlock implements EncasableBlo
 		}
 
 	}
+
 }

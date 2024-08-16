@@ -24,14 +24,15 @@ import com.simibubi.create.content.kinetics.belt.behaviour.TransportedItemStackH
 import com.simibubi.create.content.kinetics.belt.behaviour.TransportedItemStackHandlerBehaviour.TransportedResult;
 import com.simibubi.create.content.kinetics.belt.transport.BeltInventory;
 import com.simibubi.create.content.kinetics.belt.transport.BeltMovementHandler;
-import com.simibubi.create.content.kinetics.belt.transport.BeltMovementHandler.TransportedEntityInfo;
 import com.simibubi.create.content.kinetics.belt.transport.BeltTunnelInteractionHandler;
 import com.simibubi.create.content.kinetics.belt.transport.ItemHandlerBeltSegment;
 import com.simibubi.create.content.kinetics.belt.transport.TransportedItemStack;
+import com.simibubi.create.content.kinetics.belt.transport.BeltMovementHandler.TransportedEntityInfo;
 import com.simibubi.create.content.logistics.tunnel.BrassTunnelBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.inventory.VersionedInventoryTrackerBehaviour;
 import com.simibubi.create.foundation.utility.NBTHelper;
+import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.core.BlockPos;
@@ -103,6 +104,19 @@ public class BeltBlockEntity extends KineticBlockEntity {
 	}
 
 	@Override
+	public float getTorque(float speed) {
+		float shaftFriction = AllConfigs.server().kinetics.shaftFriction.getF();
+		float shaftResistance = AllConfigs.server().kinetics.shaftResistance.getF();
+		float pulleyTorque = hasPulley() ? -shaftFriction * Math.signum(speed) - shaftResistance * speed : 0;
+		return super.getTorque(speed) + pulleyTorque;
+	}
+	
+	@Override
+	public float getInertia() {
+		return super.getInertia() + (hasPulley() ? AllConfigs.server().kinetics.shaftInertia.getF() : 0);
+	}
+	
+	@Override
 	public void tick() {
 		// Init belt
 		if (beltLength == 0)
@@ -151,6 +165,7 @@ public class BeltBlockEntity extends KineticBlockEntity {
 		toRemove.forEach(passengers::remove);
 	}
 
+	/*
 	@Override
 	public float calculateStressApplied() {
 		if (!isController())
@@ -158,6 +173,7 @@ public class BeltBlockEntity extends KineticBlockEntity {
 		return super.calculateStressApplied();
 	}
 
+*/
 	@Override
 	public AABB createRenderBoundingBox() {
 		if (!isController())

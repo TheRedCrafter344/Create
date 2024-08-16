@@ -6,6 +6,7 @@ import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.AllShapes;
+import com.simibubi.create.content.kinetics.crank.HandCrankBlock;
 import com.simibubi.create.foundation.utility.BlockHelper;
 import com.simibubi.create.foundation.utility.Couple;
 
@@ -107,15 +108,6 @@ public class ValveHandleBlock extends HandCrankBlock {
 	@Override
 	public BlockEntityType<? extends HandCrankBlockEntity> getBlockEntityType() {
 		return AllBlockEntityTypes.VALVE_HANDLE.get();
-	}
-
-	@Override
-	public int getRotationSpeed() {
-		return 32;
-	}
-
-	public static Couple<Integer> getSpeedRange() {
-		return Couple.create(32, 32);
 	}
 
 }

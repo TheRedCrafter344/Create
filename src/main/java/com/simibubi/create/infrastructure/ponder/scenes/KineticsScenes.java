@@ -5,7 +5,6 @@ import com.simibubi.create.AllItems;
 import com.simibubi.create.content.kinetics.crank.ValveHandleBlock;
 import com.simibubi.create.content.kinetics.crusher.CrushingWheelBlock;
 import com.simibubi.create.content.kinetics.gauge.GaugeBlock;
-import com.simibubi.create.content.kinetics.gauge.StressGaugeBlockEntity;
 import com.simibubi.create.content.kinetics.simpleRelays.CogWheelBlock;
 import com.simibubi.create.content.kinetics.simpleRelays.ShaftBlock;
 import com.simibubi.create.content.kinetics.simpleRelays.encased.EncasedCogwheelBlock;
@@ -1286,7 +1285,7 @@ public class KineticsScenes {
 		}
 		scene.idle(10);
 
-		scene.world.setBlock(gaugePos, (speed ? AllBlocks.SPEEDOMETER : AllBlocks.STRESSOMETER).getDefaultState()
+		scene.world.setBlock(gaugePos, AllBlocks.SPEEDOMETER.getDefaultState()
 			.setValue(GaugeBlock.FACING, Direction.UP), true);
 		scene.world.setKineticSpeed(util.select.position(gaugePos), 32);
 		scene.idle(10);
@@ -1305,7 +1304,7 @@ public class KineticsScenes {
 			scene.idle(5);
 			scene.effects.indicateSuccess(gaugePos);
 
-		} else {
+		}/* else {
 			BlockState state = AllBlocks.CRUSHING_WHEEL.getDefaultState()
 				.setValue(CrushingWheelBlock.AXIS, Axis.X);
 			scene.world.setBlock(util.grid.at(5, 1, 3), state, true);
@@ -1320,7 +1319,7 @@ public class KineticsScenes {
 				nbt -> nbt.putFloat("Value", .9f));
 			scene.effects.indicateRedstone(gaugePos);
 			scene.idle(10);
-		}
+		}*/
 
 		scene.idle(30);
 

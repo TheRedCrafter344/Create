@@ -30,7 +30,6 @@ public class GearboxRenderer extends KineticBlockEntityRenderer<GearboxBlockEnti
 
 		final Axis boxAxis = be.getBlockState().getValue(BlockStateProperties.AXIS);
 		final BlockPos pos = be.getBlockPos();
-		float time = AnimationTickHolder.getRenderTime(be.getLevel());
 
 		for (Direction direction : Iterate.directions) {
 			final Axis axis = direction.getAxis();
@@ -39,8 +38,9 @@ public class GearboxRenderer extends KineticBlockEntityRenderer<GearboxBlockEnti
 
 			SuperByteBuffer shaft = CachedBufferer.partialFacing(AllPartialModels.SHAFT_HALF, be.getBlockState(), direction);
 			float offset = getRotationOffsetForPosition(be, pos, axis);
-			float angle = (time * be.getSpeed() * 3f / 10) % 360;
+			float angle = (be.getRenderAngle(AnimationTickHolder.getPartialTicks(be.getLevel())) * be.getRotationSpeedModifier(direction) + offset) / 180 * (float) Math.PI;
 
+			/*
 			if (be.getSpeed() != 0 && be.hasSource()) {
 				BlockPos source = be.source.subtract(be.getBlockPos());
 				Direction sourceFacing = Direction.getNearest(source.getX(), source.getY(), source.getZ());
@@ -49,9 +49,7 @@ public class GearboxRenderer extends KineticBlockEntityRenderer<GearboxBlockEnti
 				else if (sourceFacing.getAxisDirection() == direction.getAxisDirection())
 					angle *= -1;
 			}
-
-			angle += offset;
-			angle = angle / 180f * (float) Math.PI;
+			*/
 
 			kineticRotationTransform(shaft, be, axis, angle, light);
 			shaft.renderInto(ms, buffer.getBuffer(RenderType.solid()));

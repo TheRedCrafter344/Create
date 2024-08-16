@@ -2,8 +2,8 @@ package com.simibubi.create.content.logistics.tunnel;
 
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.content.kinetics.belt.BeltBlockEntity;
-import com.simibubi.create.content.kinetics.belt.BeltBlockEntity.CasingType;
 import com.simibubi.create.content.kinetics.belt.BeltHelper;
+import com.simibubi.create.content.kinetics.belt.BeltBlockEntity.CasingType;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;

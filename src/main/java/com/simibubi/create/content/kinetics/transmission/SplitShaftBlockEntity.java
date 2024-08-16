@@ -12,7 +12,5 @@ public abstract class SplitShaftBlockEntity extends DirectionalShaftHalvesBlockE
 	public SplitShaftBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
 	}
-
-	public abstract float getRotationSpeedModifier(Direction face);
 	
 }

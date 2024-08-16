@@ -20,7 +20,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 public class GearboxInstance extends KineticBlockEntityInstance<GearboxBlockEntity> {
 
     protected final EnumMap<Direction, RotatingData> keys;
-    protected Direction sourceFacing;
+    //protected Direction sourceFacing;
 
     public GearboxInstance(MaterialManager materialManager, GearboxBlockEntity blockEntity) {
         super(materialManager, blockEntity);
@@ -31,7 +31,7 @@ public class GearboxInstance extends KineticBlockEntityInstance<GearboxBlockEnti
 
         int blockLight = world.getBrightness(LightLayer.BLOCK, pos);
         int skyLight = world.getBrightness(LightLayer.SKY, pos);
-        updateSourceFacing();
+        //updateSourceFacing();
 
         Material<RotatingData> rotatingMaterial = getRotatingMaterial();
 
@@ -46,7 +46,7 @@ public class GearboxInstance extends KineticBlockEntityInstance<GearboxBlockEnti
 
 			key.setRotationAxis(Direction.get(Direction.AxisDirection.POSITIVE, axis).step())
 					.setRotationalSpeed(getSpeed(direction))
-					.setRotationOffset(getRotationOffset(axis)).setColor(blockEntity)
+					.setRotationOffset(getRotationOffset(axis, false)).setColor(blockEntity)
 					.setPosition(getInstancePosition())
 					.setBlockLight(blockLight)
 					.setSkyLight(skyLight);
@@ -56,6 +56,7 @@ public class GearboxInstance extends KineticBlockEntityInstance<GearboxBlockEnti
     }
 
     private float getSpeed(Direction direction) {
+    	/*
         float speed = blockEntity.getSpeed();
 
         if (speed != 0 && sourceFacing != null) {
@@ -64,9 +65,12 @@ public class GearboxInstance extends KineticBlockEntityInstance<GearboxBlockEnti
             else if (sourceFacing.getAxisDirection() == direction.getAxisDirection())
                 speed *= -1;
         }
-        return speed;
+        return speed ;
+        */
+    	return blockEntity.getSpeed() * blockEntity.getRotationSpeedModifier(direction);
     }
 
+    /*
     protected void updateSourceFacing() {
         if (blockEntity.hasSource()) {
             BlockPos source = blockEntity.source.subtract(pos);
@@ -76,9 +80,10 @@ public class GearboxInstance extends KineticBlockEntityInstance<GearboxBlockEnti
         }
     }
 
+*/
     @Override
     public void update() {
-        updateSourceFacing();
+        //updateSourceFacing();
         for (Map.Entry<Direction, RotatingData> key : keys.entrySet()) {
             Direction direction = key.getKey();
             Direction.Axis axis = direction.getAxis();

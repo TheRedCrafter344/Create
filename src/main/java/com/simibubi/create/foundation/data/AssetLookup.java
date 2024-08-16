@@ -17,7 +17,7 @@ import net.minecraftforge.client.model.generators.ItemModelBuilder;
 import net.minecraftforge.client.model.generators.ModelFile;
 
 public class AssetLookup {
-
+	
 	/**
 	 * Custom block models packaged with other partials. Example:
 	 * models/block/schematicannon/block.json <br>

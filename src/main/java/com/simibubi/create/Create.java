@@ -15,7 +15,7 @@ import com.simibubi.create.content.contraptions.ContraptionMovementSetting;
 import com.simibubi.create.content.decoration.palettes.AllPaletteBlocks;
 import com.simibubi.create.content.equipment.potatoCannon.BuiltinPotatoProjectileTypes;
 import com.simibubi.create.content.fluids.tank.BoilerHeaters;
-import com.simibubi.create.content.kinetics.TorquePropagator;
+import com.simibubi.create.content.kinetics.KineticsManager;
 import com.simibubi.create.content.kinetics.fan.processing.AllFanProcessingTypes;
 import com.simibubi.create.content.kinetics.mechanicalArm.AllArmInteractionPointTypes;
 import com.simibubi.create.content.redstone.displayLink.AllDisplayBehaviours;
@@ -29,7 +29,6 @@ import com.simibubi.create.foundation.advancement.AllTriggers;
 import com.simibubi.create.foundation.block.CopperRegistries;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.simibubi.create.foundation.item.ItemDescription;
-import com.simibubi.create.foundation.item.KineticStats;
 import com.simibubi.create.foundation.item.TooltipHelper.Palette;
 import com.simibubi.create.foundation.item.TooltipModifier;
 import com.simibubi.create.foundation.utility.AttachedRegistry;
@@ -86,11 +85,12 @@ public class Create {
 		});
 	}
 
+*/
 	public static final ServerSchematicLoader SCHEMATIC_RECEIVER = new ServerSchematicLoader();
 	public static final RedstoneLinkNetworkHandler REDSTONE_LINK_NETWORK_HANDLER = new RedstoneLinkNetworkHandler();
-	public static final TorquePropagator TORQUE_PROPAGATOR = new TorquePropagator();
 	public static final GlobalRailwayManager RAILWAYS = new GlobalRailwayManager();
 	public static final ServerLagger LAGGER = new ServerLagger();
+	public static final KineticsManager KINETICS_MANAGER = new KineticsManager();
 
 	public Create() {
 		onCtor();
@@ -123,7 +123,7 @@ public class Create {
 		AllPackets.registerPackets();
 		AllFeatures.register(modEventBus);
 		AllPlacementModifiers.register(modEventBus);
-
+		
 		AllConfigs.register(modLoadingContext);
 
 		// FIXME: some of these registrations are not thread-safe

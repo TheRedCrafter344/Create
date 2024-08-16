@@ -2,9 +2,9 @@ package com.simibubi.create.content.kinetics.steamEngine;
 
 import java.util.List;
 
-import com.simibubi.create.content.kinetics.BlockStressValues;
-import com.simibubi.create.content.kinetics.base.GeneratingKineticBlockEntity;
+import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.foundation.utility.RegisteredObjects;
+import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction.Axis;
@@ -18,7 +18,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.registries.ForgeRegistries;
 
-public class PoweredShaftBlockEntity extends GeneratingKineticBlockEntity {
+public class PoweredShaftBlockEntity extends KineticBlockEntity {
 
 	public BlockPos enginePos;
 	public float engineEfficiency;
@@ -51,9 +51,16 @@ public class PoweredShaftBlockEntity extends GeneratingKineticBlockEntity {
 		capacityKey = level.getBlockState(sourcePos)
 			.getBlock();
 		this.movementDirection = direction;
-		updateGeneratedRotation();
+		//updateGeneratedRotation();
 	}
 
+	@Override
+	public boolean shouldCreateNetwork() {
+		return true;
+	}
+	
+	
+	
 	public void remove(BlockPos sourcePos) {
 		if (!isPoweredBy(sourcePos))
 			return;
@@ -62,7 +69,7 @@ public class PoweredShaftBlockEntity extends GeneratingKineticBlockEntity {
 		engineEfficiency = 0;
 		movementDirection = 0;
 		capacityKey = null;
-		updateGeneratedRotation();
+		//updateGeneratedRotation();
 	}
 
 	public boolean canBePoweredBy(BlockPos globalPos) {
@@ -101,27 +108,35 @@ public class PoweredShaftBlockEntity extends GeneratingKineticBlockEntity {
 			capacityKey = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(compound.getString("EngineType")));
 		}
 	}
-
+	
+/*
 	@Override
 	public float getGeneratedSpeed() {
 		return getCombinedCapacity() > 0 ? movementDirection * 16 * getSpeedModifier() : 0;
-	}
-
-	private float getCombinedCapacity() {
-		return capacityKey == null ? 0 : (float) (engineEfficiency * BlockStressValues.getCapacity(capacityKey));
-	}
+	}*/
 
 	private int getSpeedModifier() {
 		return (int) (1 + (engineEfficiency >= 1 ? 3 : Math.min(2, Math.floor(engineEfficiency * 4))));
 	}
-
+	
+	private float getCombinedPower() {
+		return capacityKey == null ? 0 : (float) (engineEfficiency * AllConfigs.server().kinetics.steamEnginePower.getF());
+	}
+	
+	@Override
+	public float getTorque(float speed) {
+		float clampedSpeed = speed >= 0 ? Math.max(speed, 5f) : Math.min(speed, -5f);
+		return getCombinedPower() / getSpeedModifier() / Math.abs(clampedSpeed) * movementDirection;
+	}
+	
+/*
 	@Override
 	public float calculateAddedStressCapacity() {
 		float capacity = getCombinedCapacity() / getSpeedModifier();
 		this.lastCapacityProvided = capacity;
 		return capacity;
 	}
-
+*/
 	@Override
 	public int getRotationAngleOffset(Axis axis) {
 		int combinedCoords = axis.choose(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ());

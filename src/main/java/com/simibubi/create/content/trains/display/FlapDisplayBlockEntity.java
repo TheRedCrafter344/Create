@@ -107,7 +107,7 @@ public class FlapDisplayBlockEntity extends KineticBlockEntity {
 	@Override
 	public void tick() {
 		super.tick();
-		isRunning = super.isSpeedRequirementFulfilled();
+		isRunning = getSpeed() > 4; //TODO
 		if ((!level.isClientSide || !isRunning) && !isVirtual())
 			return;
 		int activeFlaps = 0;
@@ -130,11 +130,6 @@ public class FlapDisplayBlockEntity extends KineticBlockEntity {
 	@Override
 	protected boolean isNoisy() {
 		return false;
-	}
-
-	@Override
-	public boolean isSpeedRequirementFulfilled() {
-		return isRunning;
 	}
 
 	public void applyTextManually(int lineIndex, String rawComponentText) {

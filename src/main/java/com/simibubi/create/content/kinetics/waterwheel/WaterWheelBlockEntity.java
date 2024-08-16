@@ -6,13 +6,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.simibubi.create.content.kinetics.base.GeneratingKineticBlockEntity;
 import com.simibubi.create.content.kinetics.base.IRotate;
+import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.fluid.FluidHelper;
 import com.simibubi.create.foundation.utility.Iterate;
 import com.simibubi.create.foundation.utility.VecHelper;
+import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -35,7 +36,7 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-public class WaterWheelBlockEntity extends GeneratingKineticBlockEntity {
+public class WaterWheelBlockEntity extends KineticBlockEntity {
 
 	public static final Map<Axis, Set<BlockPos>> SMALL_OFFSETS = new EnumMap<>(Axis.class);
 	public static final Map<Axis, Set<BlockPos>> LARGE_OFFSETS = new EnumMap<>(Axis.class);
@@ -109,6 +110,11 @@ public class WaterWheelBlockEntity extends GeneratingKineticBlockEntity {
 	}
 
 	@Override
+	public boolean shouldCreateNetwork() {
+		return true;
+	}
+	
+	@Override
 	public void lazyTick() {
 		super.lazyTick();
 
@@ -161,7 +167,6 @@ public class WaterWheelBlockEntity extends GeneratingKineticBlockEntity {
 		if (flowScore == score)
 			return;
 		flowScore = score;
-		updateGeneratedRotation();
 		setChanged();
 	}
 
@@ -211,9 +216,31 @@ public class WaterWheelBlockEntity extends GeneratingKineticBlockEntity {
 		return new AABB(worldPosition).inflate(getSize());
 	}
 
-	@Override
-	public float getGeneratedSpeed() {
-		return Mth.clamp(flowScore, -1, 1) * 8 / getSize();
-	}
+	//@Override
+	//public float getGeneratedSpeed() {
+	//	return Mth.clamp(flowScore, -1, 1) * 8 / getSize();
+	//}
 
+	private static final float POWER_LOSS_AT = 0.8f; // wheel rpm / water rpm point where power loss starts. power generated will be 0 when that ratio is 1.
+	
+	@Override
+	public float getTorque(float speed) {
+		if(flowScore == 0) return super.getTorque(speed);
+		float targetRPM = Mth.clamp(flowScore, -1, 1) * AllConfigs.server().kinetics.waterwheelTargetRPM.getF() / getSize();
+		float generatedPower = AllConfigs.server().kinetics.waterwheelPower.getF() * Math.abs(flowScore) * getSize();
+		float powerLossAt = targetRPM * Mth.clamp(POWER_LOSS_AT, 0, 0.9f);
+		float power;
+		speed = speed > 0 ? Math.max(speed, 1)
+				  		  : Math.min(speed, -1);
+		if(speed * targetRPM < 0) {
+			power = -AllConfigs.server().kinetics.waterwheelRemovedPower.getF() * getSize();
+		} else if(Math.abs(speed) < Math.abs(powerLossAt)) {
+			power = generatedPower;
+		} else {
+			float slope = generatedPower / (targetRPM - powerLossAt);
+			power = Math.max(generatedPower - slope * (speed - powerLossAt), -AllConfigs.server().kinetics.waterwheelRemovedPower.getF() * getSize());
+		}
+		return power / speed + super.getTorque(speed);
+	}
 }
+	

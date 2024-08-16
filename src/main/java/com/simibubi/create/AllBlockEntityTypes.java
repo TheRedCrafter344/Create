@@ -78,6 +78,7 @@ import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
 import com.simibubi.create.content.kinetics.base.ShaftInstance;
 import com.simibubi.create.content.kinetics.base.ShaftRenderer;
+import com.simibubi.create.content.kinetics.base.ShaftlessCogwheelInstance;
 import com.simibubi.create.content.kinetics.base.SingleRotatingInstance;
 import com.simibubi.create.content.kinetics.belt.BeltBlockEntity;
 import com.simibubi.create.content.kinetics.belt.BeltInstance;
@@ -87,7 +88,6 @@ import com.simibubi.create.content.kinetics.clock.CuckooClockBlockEntity;
 import com.simibubi.create.content.kinetics.clock.CuckooClockRenderer;
 import com.simibubi.create.content.kinetics.crafter.MechanicalCrafterBlockEntity;
 import com.simibubi.create.content.kinetics.crafter.MechanicalCrafterRenderer;
-import com.simibubi.create.content.kinetics.crafter.ShaftlessCogwheelInstance;
 import com.simibubi.create.content.kinetics.crank.HandCrankBlockEntity;
 import com.simibubi.create.content.kinetics.crank.HandCrankInstance;
 import com.simibubi.create.content.kinetics.crank.HandCrankRenderer;
@@ -104,14 +104,11 @@ import com.simibubi.create.content.kinetics.fan.EncasedFanBlockEntity;
 import com.simibubi.create.content.kinetics.fan.EncasedFanRenderer;
 import com.simibubi.create.content.kinetics.fan.FanInstance;
 import com.simibubi.create.content.kinetics.fan.NozzleBlockEntity;
-import com.simibubi.create.content.kinetics.flywheel.FlywheelBlockEntity;
 import com.simibubi.create.content.kinetics.flywheel.FlywheelInstance;
-import com.simibubi.create.content.kinetics.flywheel.FlywheelRenderer;
 import com.simibubi.create.content.kinetics.gantry.GantryShaftBlockEntity;
 import com.simibubi.create.content.kinetics.gauge.GaugeInstance;
 import com.simibubi.create.content.kinetics.gauge.GaugeRenderer;
 import com.simibubi.create.content.kinetics.gauge.SpeedGaugeBlockEntity;
-import com.simibubi.create.content.kinetics.gauge.StressGaugeBlockEntity;
 import com.simibubi.create.content.kinetics.gearbox.GearboxBlockEntity;
 import com.simibubi.create.content.kinetics.gearbox.GearboxInstance;
 import com.simibubi.create.content.kinetics.gearbox.GearboxRenderer;
@@ -592,11 +589,11 @@ public class AllBlockEntityTypes {
 		.renderer(() -> KineticBlockEntityRenderer::new)
 		.register();
 
-	public static final BlockEntityEntry<FlywheelBlockEntity> FLYWHEEL = REGISTRATE
-		.blockEntity("flywheel", FlywheelBlockEntity::new)
+	public static final BlockEntityEntry<KineticBlockEntity> FLYWHEEL = REGISTRATE
+		.blockEntity("flywheel", KineticBlockEntity::new)
 		.instance(() -> FlywheelInstance::new, false)
 		.validBlocks(AllBlocks.FLYWHEEL)
-		.renderer(() -> FlywheelRenderer::new)
+		.renderer(() -> KineticBlockEntityRenderer::new)
 		.register();
 
 	public static final BlockEntityEntry<MillstoneBlockEntity> MILLSTONE = REGISTRATE
@@ -694,14 +691,14 @@ public class AllBlockEntityTypes {
 		.validBlocks(AllBlocks.SPEEDOMETER)
 		.renderer(() -> GaugeRenderer::speed)
 		.register();
-
+/*
 	public static final BlockEntityEntry<StressGaugeBlockEntity> STRESSOMETER = REGISTRATE
 		.blockEntity("stressometer", StressGaugeBlockEntity::new)
 		.instance(() -> GaugeInstance.Stress::new)
 		.validBlocks(AllBlocks.STRESSOMETER)
 		.renderer(() -> GaugeRenderer::stress)
 		.register();
-
+*/
 	public static final BlockEntityEntry<AnalogLeverBlockEntity> ANALOG_LEVER = REGISTRATE
 		.blockEntity("analog_lever", AnalogLeverBlockEntity::new)
 		.instance(() -> AnalogLeverInstance::new, false)

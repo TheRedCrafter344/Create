@@ -1,181 +1,164 @@
 package com.simibubi.create.content.kinetics;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import com.simibubi.create.AllPackets;
+import com.simibubi.create.Create;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
+
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraftforge.common.world.ForgeChunkManager;
+import net.minecraftforge.network.PacketDistributor;
 
 public class KineticNetwork {
 
-	public Long id;
-	public boolean initialized;
-	public Map<KineticBlockEntity, Float> sources;
-	public Map<KineticBlockEntity, Float> members;
-
-	private float currentCapacity;
-	private float currentStress;
-	private float unloadedCapacity;
-	private float unloadedStress;
+	private Long id;
+	private LevelAccessor level;
+	
+	//maps entities to their speed multipliers
+	public Map<KineticBlockEntity, Float> loadedMembers;
+	
+	//if one is loaded, all must be loaded.
+	public List<LevelChunk> chunksToForceload;
+	public int forceloadedChunks = 0;
+	
+	private static final int TICKS_PER_CLIENT_UPDATE = 5;
+	private int ticksTilSendToClient = TICKS_PER_CLIENT_UPDATE;
+	
+	public float speed; //rpm = 0.10472 rad/s
+	
+	private float loadedEffectiveInertia; //IU = ()
+	private float effectiveTorque; //TU (1TU = 1rpm / s / IU)
+	//Note of course that effective values are not the real physical values.
+	
+	//declare:: 1 FE = energy of 1 IU moving at 1 rpm = IU * rpm^2
+	
+	private float unloadedEffectiveInertia;
 	private int unloadedMembers;
-
-	public KineticNetwork() {
-		sources = new HashMap<>();
-		members = new HashMap<>();
+	
+	public KineticNetwork(Long id, LevelAccessor level) {
+		this.id = id;
+		this.level = level;
+		loadedMembers = new HashMap<KineticBlockEntity, Float>();
+		chunksToForceload = new ArrayList<>();
 	}
-
-	public void initFromTE(float maxStress, float currentStress, int members) {
-		unloadedCapacity = maxStress;
-		unloadedStress = currentStress;
-		unloadedMembers = members;
-		initialized = true;
-		updateStress();
-		updateCapacity();
-	}
-
-	public void addSilently(KineticBlockEntity be, float lastCapacity, float lastStress) {
-		if (members.containsKey(be))
-			return;
-		if (be.isSource()) {
-			unloadedCapacity -= lastCapacity * getStressMultiplierForSpeed(be.getGeneratedSpeed());
-			float addedStressCapacity = be.calculateAddedStressCapacity();
-			sources.put(be, addedStressCapacity);
+	
+	public void tick() {
+		if(Math.abs(getEffectiveInertia()) < 0.01f) return;
+		float timeStep = 0.05f;
+		updateEffectiveTorque();
+		float oldSpeed = speed;
+		speed += timeStep * getEffectiveTorque() / getEffectiveInertia(); //forward euler, probably works fine
+		//if(speed > MAX_SPEED) speed = MAX_SPEED;
+		if(Math.abs(speed) < 0.01f) speed = 0;
+		if(speed != oldSpeed) {
+			for(KineticBlockEntity be : loadedMembers.keySet()) be.onSpeedChanged(oldSpeed * loadedMembers.get(be));
 		}
-
-		unloadedStress -= lastStress * getStressMultiplierForSpeed(be.getTheoreticalSpeed());
-		float stressApplied = be.calculateStressApplied();
-		members.put(be, stressApplied);
-
-		unloadedMembers--;
-		if (unloadedMembers < 0)
-			unloadedMembers = 0;
-		if (unloadedCapacity < 0)
-			unloadedCapacity = 0;
-		if (unloadedStress < 0)
-			unloadedStress = 0;
+		ticksTilSendToClient--;
+		if(ticksTilSendToClient <= 0) {
+			ticksTilSendToClient = TICKS_PER_CLIENT_UPDATE;
+			sendToClient();
+		}
 	}
-
-	public void add(KineticBlockEntity be) {
-		if (members.containsKey(be))
-			return;
-		if (be.isSource())
-			sources.put(be, be.calculateAddedStressCapacity());
-		members.put(be, be.calculateStressApplied());
-		updateFromNetwork(be);
-		be.networkDirty = true;
+	
+	//updates and syncs network id and speed mutlipliers.
+	public void updateAll() {
+		for(KineticBlockEntity be : loadedMembers.keySet()) be.updateSpeedMultiplier();
 	}
-
-	public void updateCapacityFor(KineticBlockEntity be, float capacity) {
-		sources.put(be, capacity);
-		updateCapacity();
+	
+	public void sendToClient() {
+		if(!(level instanceof Level)) return;
+		Level level = (Level) this.level;
+		AllPackets.getChannel().send(PacketDistributor.DIMENSION.with(() -> level.dimension()), new KineticNetworkPacket(id, speed, getEffectiveInertia(), getSize()));
 	}
-
-	public void updateStressFor(KineticBlockEntity be, float stress) {
-		members.put(be, stress);
-		updateStress();
+	
+	public void initialize(float speed, float effectiveInertia, int members) {
+		this.speed = speed;
+		this.unloadedEffectiveInertia = effectiveInertia;
+		this.unloadedMembers = members;
 	}
-
+	
+	public void addBlockEntity(KineticBlockEntity be, float speedMultiplier, boolean conserveMomentum) {
+		if(loadedMembers.containsKey(be)) return;
+		float addedInertia = be.getInertia() * speedMultiplier * speedMultiplier;
+		if(conserveMomentum) stickEffectiveInertia(addedInertia);
+		loadedMembers.put(be, speedMultiplier);
+		loadedEffectiveInertia += addedInertia;
+	}
+	
 	public void remove(KineticBlockEntity be) {
-		if (!members.containsKey(be))
-			return;
-		if (be.isSource())
-			sources.remove(be);
-		members.remove(be);
-		be.updateFromNetwork(0, 0, 0);
-
-		if (members.isEmpty()) {
-			TorquePropagator.networks.get(be.getLevel())
-				.remove(this.id);
-			return;
-		}
-
-		members.keySet()
-			.stream()
-			.findFirst()
-			.map(member -> member.networkDirty = true);
+		if(!loadedMembers.containsKey(be)) return;
+		float speedMultiplier = loadedMembers.get(be);
+		loadedMembers.remove(be);
+		loadedEffectiveInertia -= be.getInertia() * speedMultiplier * speedMultiplier;
 	}
-
-	public void sync() {
-		for (KineticBlockEntity be : members.keySet())
-			updateFromNetwork(be);
-	}
-
-	private void updateFromNetwork(KineticBlockEntity be) {
-		be.updateFromNetwork(currentCapacity, currentStress, getSize());
-	}
-
-	public void updateCapacity() {
-		float newMaxStress = calculateCapacity();
-		if (currentCapacity != newMaxStress) {
-			currentCapacity = newMaxStress;
-			sync();
-		}
-	}
-
-	public void updateStress() {
-		float newStress = calculateStress();
-		if (currentStress != newStress) {
-			currentStress = newStress;
-			sync();
-		}
-	}
-
-	public void updateNetwork() {
-		float newStress = calculateStress();
-		float newMaxStress = calculateCapacity();
-		if (currentStress != newStress || currentCapacity != newMaxStress) {
-			currentStress = newStress;
-			currentCapacity = newMaxStress;
-			sync();
-		}
-	}
-
-	public float calculateCapacity() {
-		float presentCapacity = 0;
-		for (Iterator<KineticBlockEntity> iterator = sources.keySet()
-			.iterator(); iterator.hasNext();) {
-			KineticBlockEntity be = iterator.next();
-			if (be.getLevel()
-				.getBlockEntity(be.getBlockPos()) != be) {
-				iterator.remove();
-				continue;
+	
+	public void loadBlockEntity(KineticBlockEntity be, float speedMultiplier) {
+		if(loadedMembers.containsKey(be)) return;
+		for(KineticBlockEntity pbe : loadedMembers.keySet()) {
+			if(pbe.getBlockPos().equals(be.getBlockPos())) {
+				remove(pbe);
+				loadedMembers.put(be, speedMultiplier);
+				return;
 			}
-			presentCapacity += getActualCapacityOf(be);
 		}
-		float newMaxStress = presentCapacity + unloadedCapacity;
-		return newMaxStress;
+		loadedMembers.put(be, speedMultiplier);
+		unloadedMembers--;
+		unloadedEffectiveInertia -= be.getInertia() * speedMultiplier * speedMultiplier;
+		loadedEffectiveInertia += be.getInertia() * speedMultiplier * speedMultiplier;
+		if(unloadedMembers < 0) unloadedMembers = 0;
+		if(unloadedEffectiveInertia < 0) unloadedEffectiveInertia = 0;
 	}
-
-	public float calculateStress() {
-		float presentStress = 0;
-		for (Iterator<KineticBlockEntity> iterator = members.keySet()
-			.iterator(); iterator.hasNext();) {
-			KineticBlockEntity be = iterator.next();
-			if (be.getLevel()
-				.getBlockEntity(be.getBlockPos()) != be) {
-				iterator.remove();
-				continue;
-			}
-			presentStress += getActualStressOf(be);
+	
+	//changes the speed as if inertia was added, conserving momentum.
+	public void stickEffectiveInertia(float modifiedInertia) {
+		speed *= getEffectiveInertia() / (getEffectiveInertia() + modifiedInertia);
+	}
+	
+	public float getEffectiveInertia() {
+		return loadedEffectiveInertia + unloadedEffectiveInertia;
+	}
+	
+	public void updateEffectiveInertia() {
+		float inertia = 0;
+		for(Entry<KineticBlockEntity, Float> member : loadedMembers.entrySet()) {
+			inertia += member.getKey().getInertia() * member.getValue() * member.getValue();
 		}
-		float newStress = presentStress + unloadedStress;
-		return newStress;
+		loadedEffectiveInertia = inertia;
 	}
-
-	public float getActualCapacityOf(KineticBlockEntity be) {
-		return sources.get(be) * getStressMultiplierForSpeed(be.getGeneratedSpeed());
+	
+	public float getMultiplierFor(KineticBlockEntity be) {
+		if(!loadedMembers.containsKey(be)) return 0;
+		return loadedMembers.get(be);
 	}
-
-	public float getActualStressOf(KineticBlockEntity be) {
-		return members.get(be) * getStressMultiplierForSpeed(be.getTheoreticalSpeed());
+	
+	public float getSpeed() {
+		return speed;
 	}
-
-	private static float getStressMultiplierForSpeed(float speed) {
-		return Math.abs(speed);
+	
+	public float getEffectiveTorque() {
+		return effectiveTorque;
 	}
-
+	
+	public void updateEffectiveTorque() {
+		float torque = 0;
+		for(Entry<KineticBlockEntity, Float> member : loadedMembers.entrySet()) {
+			torque += member.getKey().getTorque(speed * member.getValue()) * member.getValue();
+		}
+		effectiveTorque = torque;
+	}
+	
 	public int getSize() {
-		return unloadedMembers + members.size();
+		return loadedMembers.size() + unloadedMembers;
 	}
-
+	
+	public Long getId() {
+		return id;
+	}
 }

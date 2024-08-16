@@ -55,9 +55,7 @@ public class BracketedKineticBlockEntityRenderer extends KineticBlockEntityRende
 	public static float getAngleForLargeCogShaft(SimpleKineticBlockEntity be, Axis axis) {
 		BlockPos pos = be.getBlockPos();
 		float offset = getShaftAngleOffset(axis, pos);
-		float time = AnimationTickHolder.getRenderTime(be.getLevel());
-		float angle = ((time * be.getSpeed() * 3f / 10 + offset) % 360) / 180 * (float) Math.PI;
-		return angle;
+		return (be.getRenderAngle(AnimationTickHolder.getPartialTicks()) + offset) / 180 * (float) Math.PI;
 	}
 
 	public static float getShaftAngleOffset(Axis axis, BlockPos pos) {
