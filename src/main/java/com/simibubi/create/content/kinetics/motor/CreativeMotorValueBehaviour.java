@@ -19,7 +19,7 @@ public class CreativeMotorValueBehaviour extends ScrollValueBehaviour {
 
 	public CreativeMotorValueBehaviour(Component label, SmartBlockEntity be, ValueBoxTransform slot) {
 		super(label, be, slot);
-		between(0, 768);
+		between(0, 770);
 		withFormatter(v -> formatter(v));
 	}
 
