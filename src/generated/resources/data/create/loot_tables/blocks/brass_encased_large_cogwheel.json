@@ -11,7 +11,7 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "create:large_cogwheel_old"
+          "name": "create:large_cogwheel"
         }
       ],
       "rolls": 1.0

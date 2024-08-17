@@ -7,6 +7,7 @@ import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.content.contraptions.AssemblyException;
 import com.simibubi.create.content.contraptions.ControlledContraptionEntity;
 import com.simibubi.create.content.contraptions.IDisplayAssemblyExceptions;
+import com.simibubi.create.content.kinetics.base.KineticBlock;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.content.kinetics.transmission.sequencer.SequencerInstructions;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
@@ -16,15 +17,20 @@ import com.simibubi.create.foundation.item.TooltipHelper;
 import com.simibubi.create.foundation.utility.AngleHelper;
 import com.simibubi.create.foundation.utility.Lang;
 import com.simibubi.create.foundation.utility.ServerSpeedProvider;
+import com.simibubi.create.foundation.utility.VecHelper;
+import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Direction.Axis;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.StructureBlockInfo;
+import net.minecraft.world.phys.Vec3;
 
 public class MechanicalBearingBlockEntity extends KineticBlockEntity
 	implements IBearingBlockEntity, IDisplayAssemblyExceptions {
@@ -199,6 +205,8 @@ public class MechanicalBearingBlockEntity extends KineticBlockEntity
 			award(AllAdvancements.CONTRAPTION_ACTORS);
 
 		running = true;
+		getOrCreateNetwork().updateEffectiveInertia();
+		getOrCreateNetwork().stickEffectiveInertia(getContraptionInertia());
 		angle = 0;
 		sendData();
 	}
@@ -217,6 +225,7 @@ public class MechanicalBearingBlockEntity extends KineticBlockEntity
 
 		movedContraption = null;
 		running = false;
+		getOrCreateNetwork().updateEffectiveInertia();
 		assembleNextTick = false;
 		sendData();
 	}
@@ -301,10 +310,62 @@ public class MechanicalBearingBlockEntity extends KineticBlockEntity
 		movedContraption.setPos(anchor.getX(), anchor.getY(), anchor.getZ());
 		if (!level.isClientSide) {
 			this.running = true;
+			getOrCreateNetwork().updateEffectiveInertia();
+			getOrCreateNetwork().stickEffectiveInertia(getContraptionInertia());
 			sendData();
 		}
 	}
-
+	
+	@Override
+	public float getInertia() {
+		return super.getInertia() + (running ? getContraptionInertia() : 0);
+	}
+	
+	public float getContraptionInertia() {
+		float inertia = 0;
+		Axis axis = movedContraption.getRotationAxis();
+		for(StructureBlockInfo sblock : movedContraption.getContraption().getBlocks().values()) {
+			float rSquared = sblock.pos().getX() * sblock.pos().getX() * (axis == Axis.X ? 0 : 1)
+					+ sblock.pos().getY() * sblock.pos().getY() * (axis == Axis.Y ? 0 : 1)
+					+ sblock.pos().getZ() * sblock.pos().getZ() * (axis == Axis.Z ? 0 : 1);
+			float mass = 60; //TODO
+			if(sblock.state().getBlock() instanceof KineticBlock) {
+				mass = 6 * AllConfigs.server().kinetics.getInertia((KineticBlock) sblock.state().getBlock());
+			}
+			inertia += (rSquared + 1f/6f) * mass;
+		}
+		return inertia;
+	}
+	
+	public static final float GRAVITY = 10; //TODO
+	
+	@Override
+	public float getTorque(float speed) {
+		if(!running || movedContraption == null) return super.getTorque(speed);
+		float totalMass = 0;
+		float comX = 0, comY = 0, comZ = 0;
+		Axis axis = movedContraption.getRotationAxis();
+		for(StructureBlockInfo sblock : movedContraption.getContraption().getBlocks().values()) {
+			float mass = 60; //TODO
+			if(sblock.state().getBlock() instanceof KineticBlock) {
+				mass = 6 * AllConfigs.server().kinetics.getInertia((KineticBlock) sblock.state().getBlock());
+			}
+			comX += sblock.pos().getX() * mass;
+			comY += sblock.pos().getY() * mass;
+			comZ += sblock.pos().getZ() * mass;
+			totalMass += mass;
+		}
+		comX /= totalMass;
+		comY /= totalMass;
+		comZ /= totalMass;
+		Vec3 com = VecHelper.rotate(new Vec3(comX, comY, comZ), angle, axis);
+		Vec3 torqueVec = com.cross(new Vec3(0, -GRAVITY * totalMass, 0));
+		float torque = (float) (axis == Axis.X ? torqueVec.x :
+								axis == Axis.Y ? torqueVec.y :
+								axis == Axis.Z ? torqueVec.z : 0);
+		return super.getTorque(speed) + torque;
+	}
+	
 	@Override
 	public void onStall() {
 		if (!level.isClientSide)

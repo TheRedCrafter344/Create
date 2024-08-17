@@ -11,7 +11,7 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "create:shaft_old"
+          "name": "create:shaft"
         }
       ],
       "rolls": 1.0

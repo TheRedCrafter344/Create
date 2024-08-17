@@ -81,7 +81,7 @@ public class WindmillBearingBlockEntity extends MechanicalBearingBlockEntity {
 		float powerLossAt = targetRPM * Mth.clamp(POWER_LOSS_AT, 0, 0.9f);
 		float power;
 		speed = speed > 0 ? Math.max(speed, 1)
-				  		  : Math.min(-speed, -1);
+				  		  : Math.min(speed, -1);
 		if(speed * targetRPM < 0) {
 			power = MAX_REMOVED_POWER;
 		} else if(Math.abs(speed) < Math.abs(powerLossAt)) {
