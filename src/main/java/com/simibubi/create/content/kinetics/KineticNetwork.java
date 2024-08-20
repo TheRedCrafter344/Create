@@ -56,7 +56,7 @@ public class KineticNetwork {
 		float oldSpeed = speed;
 		speed += timeStep * getEffectiveTorque() / getEffectiveInertia(); //forward euler, probably works fine
 		//if(speed > MAX_SPEED) speed = MAX_SPEED;
-		if(Math.abs(speed) < 0.01f) speed = 0;
+		if(oldSpeed != 0 && Math.signum(speed) != Math.signum(oldSpeed)) speed = 0;
 		if(speed != oldSpeed) {
 			for(KineticBlockEntity be : loadedMembers.keySet()) be.onSpeedChanged(oldSpeed * loadedMembers.get(be));
 		}
@@ -96,6 +96,9 @@ public class KineticNetwork {
 		if(!loadedMembers.containsKey(be)) return;
 		float speedMultiplier = loadedMembers.get(be);
 		loadedMembers.remove(be);
+		if(loadedMembers.isEmpty()) {
+			Create.KINETICS_MANAGER.removeNetwork(level, id);
+		}
 		loadedEffectiveInertia -= be.getInertia() * speedMultiplier * speedMultiplier;
 	}
 	
@@ -103,8 +106,8 @@ public class KineticNetwork {
 		if(loadedMembers.containsKey(be)) return;
 		for(KineticBlockEntity pbe : loadedMembers.keySet()) {
 			if(pbe.getBlockPos().equals(be.getBlockPos())) {
-				remove(pbe);
 				loadedMembers.put(be, speedMultiplier);
+				remove(pbe);
 				return;
 			}
 		}

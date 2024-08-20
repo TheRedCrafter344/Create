@@ -121,7 +121,6 @@ public class WindmillBearingBlockEntity extends MechanicalBearingBlockEntity {
 	@Override
 	public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
 		super.addBehaviours(behaviours);
-		behaviours.remove(movementMode);
 		movementDirection = new ScrollOptionBehaviour<>(RotationDirection.class,
 			Lang.translateDirect("contraptions.windmill.rotation_direction"), this, getMovementModeSlot());
 		behaviours.add(movementDirection);

@@ -78,12 +78,6 @@ public class DrillBlock extends DirectionalKineticBlock implements IBE<DrillBloc
 	}
 
 	@Override
-	public void neighborChanged(BlockState state, Level worldIn, BlockPos pos, Block blockIn, BlockPos fromPos,
-		boolean isMoving) {
-		withBlockEntityDo(worldIn, pos, DrillBlockEntity::destroyNextTick);
-	}
-
-	@Override
 	public Axis getRotationAxis(BlockState state) {
 		return state.getValue(FACING)
 			.getAxis();

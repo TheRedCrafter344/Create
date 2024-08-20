@@ -159,8 +159,6 @@ public class SawBlockEntity extends BlockBreakingKineticBlockEntity {
 
 	@Override
 	public void tick() {
-		if (shouldRun() && ticksUntilNextProgress < 0)
-			destroyNextTick();
 		super.tick();
 
 		if (!canProcess())

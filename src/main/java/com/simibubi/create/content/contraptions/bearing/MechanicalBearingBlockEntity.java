@@ -7,12 +7,11 @@ import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.content.contraptions.AssemblyException;
 import com.simibubi.create.content.contraptions.ControlledContraptionEntity;
 import com.simibubi.create.content.contraptions.IDisplayAssemblyExceptions;
+import com.simibubi.create.content.kinetics.KineticNetwork;
 import com.simibubi.create.content.kinetics.base.KineticBlock;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
-import com.simibubi.create.content.kinetics.transmission.sequencer.SequencerInstructions;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
-import com.simibubi.create.foundation.blockEntity.behaviour.scrollValue.ScrollOptionBehaviour;
 import com.simibubi.create.foundation.item.TooltipHelper;
 import com.simibubi.create.foundation.utility.AngleHelper;
 import com.simibubi.create.foundation.utility.Lang;
@@ -35,7 +34,6 @@ import net.minecraft.world.phys.Vec3;
 public class MechanicalBearingBlockEntity extends KineticBlockEntity
 	implements IBearingBlockEntity, IDisplayAssemblyExceptions {
 
-	protected ScrollOptionBehaviour<RotationMode> movementMode;
 	protected ControlledContraptionEntity movedContraption;
 	protected float angle;
 	protected boolean running;
@@ -46,6 +44,10 @@ public class MechanicalBearingBlockEntity extends KineticBlockEntity
 
 	private float prevAngle;
 
+	private boolean wasStalled = false;
+	
+	public float storedEnergy = 0;
+	
 	public MechanicalBearingBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
 		setLazyTickRate(3);
@@ -65,9 +67,6 @@ public class MechanicalBearingBlockEntity extends KineticBlockEntity
 	@Override
 	public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
 		super.addBehaviours(behaviours);
-		movementMode = new ScrollOptionBehaviour<>(RotationMode.class,
-			Lang.translateDirect("contraptions.movement_mode"), this, getMovementModeSlot());
-		behaviours.add(movementMode);
 		registerAwardables(behaviours, AllAdvancements.CONTRAPTION_ACTORS);
 	}
 
@@ -82,6 +81,7 @@ public class MechanicalBearingBlockEntity extends KineticBlockEntity
 	public void write(CompoundTag compound, boolean clientPacket) {
 		compound.putBoolean("Running", running);
 		compound.putFloat("Angle", angle);
+		compound.putFloat("StoredEnergy", storedEnergy);
 		if (sequencedAngleLimit >= 0)
 			compound.putDouble("SequencedAngleLimit", sequencedAngleLimit);
 		AssemblyException.write(compound, lastException);
@@ -98,6 +98,7 @@ public class MechanicalBearingBlockEntity extends KineticBlockEntity
 		float angleBefore = angle;
 		running = compound.getBoolean("Running");
 		angle = compound.getFloat("Angle");
+		storedEnergy = compound.getFloat("StoredEnergy");
 		sequencedAngleLimit = compound.contains("SequencedAngleLimit") ? compound.getDouble("SequencedAngleLimit") : -1;
 		lastException = AssemblyException.read(compound);
 		super.read(compound, clientPacket);
@@ -127,7 +128,6 @@ public class MechanicalBearingBlockEntity extends KineticBlockEntity
 	@Override
 	public void onSpeedChanged(float prevSpeed) {
 		super.onSpeedChanged(prevSpeed);
-		assembleNextTick = true;
 		sequencedAngleLimit = -1;
 
 		if (movedContraption != null && Math.signum(prevSpeed) != Math.signum(getSpeed()) && prevSpeed != 0) {
@@ -205,8 +205,10 @@ public class MechanicalBearingBlockEntity extends KineticBlockEntity
 			award(AllAdvancements.CONTRAPTION_ACTORS);
 
 		running = true;
-		getOrCreateNetwork().updateEffectiveInertia();
-		getOrCreateNetwork().stickEffectiveInertia(getContraptionInertia());
+		if (hasNetwork()) {
+			getOrCreateNetwork().stickEffectiveInertia(getContraptionInertia() * speedMultiplier * speedMultiplier);
+			getOrCreateNetwork().updateEffectiveInertia();
+		}
 		angle = 0;
 		sendData();
 	}
@@ -225,7 +227,7 @@ public class MechanicalBearingBlockEntity extends KineticBlockEntity
 
 		movedContraption = null;
 		running = false;
-		getOrCreateNetwork().updateEffectiveInertia();
+		if(hasNetwork()) getOrCreateNetwork().updateEffectiveInertia();
 		assembleNextTick = false;
 		sendData();
 	}
@@ -238,23 +240,15 @@ public class MechanicalBearingBlockEntity extends KineticBlockEntity
 		if (level.isClientSide)
 			clientAngleDiff /= 2;
 
+		
 		if (!level.isClientSide && assembleNextTick) {
 			assembleNextTick = false;
 			if (running) {
-				boolean canDisassemble = movementMode.get() == RotationMode.ROTATE_PLACE
-					|| (isNearInitialAngle() && movementMode.get() == RotationMode.ROTATE_PLACE_RETURNED);
-				if (getSpeed() == 0 && (canDisassemble || movedContraption == null || movedContraption.getContraption()
-					.getBlocks()
-					.isEmpty())) {
-					if (movedContraption != null)
-						movedContraption.getContraption()
-							.stop(level);
-					disassemble();
-					return;
-				}
+				if (movedContraption != null)
+					movedContraption.getContraption().stop(level);
+				disassemble();
+				return;
 			} else {
-				if (getSpeed() == 0 && !isWindmill())
-					return;
 				assemble();
 			}
 		}
@@ -262,7 +256,9 @@ public class MechanicalBearingBlockEntity extends KineticBlockEntity
 		if (!running)
 			return;
 
-		if (!(movedContraption != null && movedContraption.isStalled())) {
+		if(movedContraption == null) return;
+		
+		if (!movedContraption.isStalled()) {
 			float angularSpeed = getAngularSpeed();
 			if (sequencedAngleLimit >= 0) {
 				angularSpeed = (float) Mth.clamp(angularSpeed, -sequencedAngleLimit, sequencedAngleLimit);
@@ -270,13 +266,19 @@ public class MechanicalBearingBlockEntity extends KineticBlockEntity
 			}
 			float newAngle = angle + angularSpeed;
 			angle = (float) (newAngle % 360);
+			if(!level.isClientSide() && wasStalled) {
+				wasStalled = false;
+				if(hasNetwork()) {
+					KineticNetwork net = getOrCreateNetwork();
+					net.stickEffectiveInertia(getContraptionInertia() * speedMultiplier * speedMultiplier);
+					net.updateEffectiveInertia();
+					net.speed = (float) (Math.signum(net.speed) * Math.sqrt(net.speed * net.speed + 2 * storedEnergy / net.getEffectiveInertia()));
+					storedEnergy = 0;
+				}
+			}
 		}
 
-		applyRotation();
-	}
-
-	public boolean isNearInitialAngle() {
-		return Math.abs(angle) < 22.5 || Math.abs(angle) > 360 - 22.5;
+		applyRotation(); 
 	}
 
 	@Override
@@ -288,7 +290,7 @@ public class MechanicalBearingBlockEntity extends KineticBlockEntity
 
 	protected void applyRotation() {
 		if (movedContraption == null)
-			return;
+			return;	
 		movedContraption.setAngle(angle);
 		BlockState blockState = getBlockState();
 		if (blockState.hasProperty(BlockStateProperties.FACING))
@@ -310,15 +312,17 @@ public class MechanicalBearingBlockEntity extends KineticBlockEntity
 		movedContraption.setPos(anchor.getX(), anchor.getY(), anchor.getZ());
 		if (!level.isClientSide) {
 			this.running = true;
-			getOrCreateNetwork().updateEffectiveInertia();
-			getOrCreateNetwork().stickEffectiveInertia(getContraptionInertia());
+			if (hasNetwork()) {
+				getOrCreateNetwork().stickEffectiveInertia(getContraptionInertia() * speedMultiplier * speedMultiplier);
+				getOrCreateNetwork().updateEffectiveInertia();
+			}
 			sendData();
 		}
 	}
 	
 	@Override
 	public float getInertia() {
-		return super.getInertia() + (running ? getContraptionInertia() : 0);
+		return super.getInertia() + (running && movedContraption != null && !wasStalled ? getContraptionInertia() : 0);
 	}
 	
 	public float getContraptionInertia() {
@@ -341,7 +345,7 @@ public class MechanicalBearingBlockEntity extends KineticBlockEntity
 	
 	@Override
 	public float getTorque(float speed) {
-		if(!running || movedContraption == null) return super.getTorque(speed);
+		if(!running || movedContraption == null || movedContraption.isStalled()) return super.getTorque(speed);
 		float totalMass = 0;
 		float comX = 0, comY = 0, comZ = 0;
 		Axis axis = movedContraption.getRotationAxis();
@@ -368,8 +372,12 @@ public class MechanicalBearingBlockEntity extends KineticBlockEntity
 	
 	@Override
 	public void onStall() {
-		if (!level.isClientSide)
+		if (!level.isClientSide) {
 			sendData();
+			wasStalled = true;
+			if(hasNetwork()) getOrCreateNetwork().updateEffectiveInertia();
+			storedEnergy += 0.5f * getContraptionInertia() * getSpeed() * getSpeed();
+		}
 	}
 
 	@Override
@@ -407,11 +415,36 @@ public class MechanicalBearingBlockEntity extends KineticBlockEntity
 		return true;
 	}
 
+	@Override
+	public boolean addToGoggleTooltip(List<Component> tooltip, boolean isSneaking) {
+		if(network == null) {
+			Lang.text("Not in network").forGoggles(tooltip);
+		} else {
+			Lang.text("Network ID: " + network).forGoggles(tooltip);
+			Lang.text("Speed: " + getSpeed()).forGoggles(tooltip);
+			Lang.text("Speed Multiplier: " + speedMultiplier).forGoggles(tooltip);
+			Lang.text("Network Effective Inertia: " + getOrCreateClientNetwork().getEffectiveInertia()).forGoggles(tooltip);
+			Lang.text("Stored Energy: " + storedEnergy).forGoggles(tooltip);
+		}
+		return true;
+	}
+	
 	public void setAngle(float forcedAngle) {
 		angle = forcedAngle;
 	}
 
 	public ControlledContraptionEntity getMovedContraption() {
 		return movedContraption;
+	}
+
+	public void neighbourChanged(boolean hasNeighborSignal) {
+		if(hasNeighborSignal) {
+			assembleNextTick = true;
+		}
+	}
+	
+	@Override
+	public boolean shouldCreateNetwork() {
+		return true;
 	}
 }

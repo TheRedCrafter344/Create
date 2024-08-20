@@ -33,6 +33,7 @@ public class CreativeMotorBlockEntity extends KineticBlockEntity {
 	public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
 		super.addBehaviours(behaviours);
 		generatorSettings = new CreativeMotorValueBehaviour(Lang.translateDirect("kinetics.creative_motor.generator_settings"), this, new MotorValueBox());
+		generatorSettings.value = 674;
 		behaviours.add(generatorSettings);
 	}
 
@@ -47,7 +48,7 @@ public class CreativeMotorBlockEntity extends KineticBlockEntity {
 			float power = 200*value;
 			return power / clampedSpeed;
 		case 1:
-			float torque = 10*value;
+			float torque = 100*value;
 			return torque;
 		case 2:
 			float targetSpeed = 2*value;

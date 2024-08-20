@@ -53,6 +53,8 @@ public class KineticBlockEntity extends SmartBlockEntity implements IHaveGoggleI
 	public float prevSpeed;
 	
 	public boolean updateKinetics;
+
+	public boolean preventSpeedUpdate;
 	
 	public KineticBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
@@ -66,11 +68,7 @@ public class KineticBlockEntity extends SmartBlockEntity implements IHaveGoggleI
 	@Override
 	public void initialize() {
 		if(!level.isClientSide && network != null) {
-			KineticNetwork network = getOrCreateNetwork();
-			//if(!network.initialized) network.initialize(speed / speedMultiplier, networkInertia, networkSize);
-			
-			network.loadBlockEntity(this, speedMultiplier);
-			
+			getOrCreateNetwork().loadBlockEntity(this, speedMultiplier);
 			updateKinetics = false;
 		}
 		super.initialize();
@@ -82,24 +80,12 @@ public class KineticBlockEntity extends SmartBlockEntity implements IHaveGoggleI
 		if (!level.isClientSide && updateKinetics)
 			attachKinetics();
 		
-		
 		effects.tick();
+		preventSpeedUpdate = false;
 		
 		if (level.isClientSide) {
 			DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> this.tickAudio());
-			//renderAngle += speed * 0.3f;
-			//if(renderAngle > 360) renderAngle -= 360;
-			//return;
 		}
-		/*
-		if(!level.isClientSide) {
-			ticksTilSpeedUpdate--;
-			if(ticksTilSpeedUpdate <= 0) {
-				ticksTilSpeedUpdate = 5;
-				if(network != null) updateFromNetwork();
-			}
-		}
-		*/ //network handles this now
 	}
 	
 	public float getRenderAngle(float partialTicks) {

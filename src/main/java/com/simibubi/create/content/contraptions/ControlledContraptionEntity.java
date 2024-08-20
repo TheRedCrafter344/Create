@@ -201,7 +201,7 @@ public class ControlledContraptionEntity extends AbstractContraptionEntity {
 		return true;
 	}
 
-	protected IControlContraption getController() {
+	public IControlContraption getController() {
 		if (controllerPos == null)
 			return null;
 		if (!level().isLoaded(controllerPos))

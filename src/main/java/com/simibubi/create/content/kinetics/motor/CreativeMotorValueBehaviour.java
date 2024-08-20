@@ -50,7 +50,7 @@ public class CreativeMotorValueBehaviour extends ScrollValueBehaviour {
 		case 0:
 			return Lang.number(0.2 * (settings.value() - 128)).add(Lang.text(" kEU/s")).component();
 		case 1:
-			return Lang.number(10 * (settings.value() - 128)).add(Lang.text(" TU")).component();
+			return Lang.number(0.1 * (settings.value() - 128)).add(Lang.text(" kTU")).component();
 		case 2:
 			return Lang.number(2 * (settings.value() - 128)).add(Lang.text(" rpm")).component();
 		}
@@ -61,7 +61,7 @@ public class CreativeMotorValueBehaviour extends ScrollValueBehaviour {
 		if(0 <= value && value < 257) {
 			return 0.2 * (value - 128) + "kEU/s";
 		} else if(257 <= value && value < 514) {
-			return 10 * (value - 385) + "TU";
+			return 0.1 * (value - 385) + "kTU";
 		} else if(514 <= value && value < 771) {
 			return 2 * (value - 642) + "rpm";
 		}

@@ -102,6 +102,11 @@ public class KineticsManager {
 		return network;
 	}
 	
+	public void removeNetwork(LevelAccessor level, Long id) {
+		if(level.isClientSide() || id == null || !networks.containsKey(level)) return;
+		networks.get(level).remove(id);
+	}
+	
 	public ClientKineticNetwork getOrCreateNetworkClientFor(KineticBlockEntity be) {
 		return getOrCreateNetworkClient(be.getLevel(), be.network);
 	}

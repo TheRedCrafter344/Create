@@ -1,7 +1,11 @@
 package com.simibubi.create.content.kinetics.base;
 
+import com.simibubi.create.Create;
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
+import com.simibubi.create.content.contraptions.ControlledContraptionEntity;
+import com.simibubi.create.content.contraptions.IControlContraption;
 import com.simibubi.create.content.contraptions.OrientedContraptionEntity;
+import com.simibubi.create.content.contraptions.bearing.MechanicalBearingBlockEntity;
 import com.simibubi.create.content.contraptions.behaviour.MovementBehaviour;
 import com.simibubi.create.content.contraptions.behaviour.MovementContext;
 import com.simibubi.create.content.contraptions.mounted.MountedContraption;
@@ -110,7 +114,6 @@ public class BlockBreakingMovementBehaviour implements MovementBehaviour {
 		BlockPos breakingPos = NbtUtils.readBlockPos(data.getCompound("BreakingPos"));
 
 		data.remove("Progress");
-		data.remove("TicksUntilNextProgress");
 		data.remove("BreakingPos");
 
 		MovementBehaviour.super.cancelStall(context);
@@ -157,15 +160,10 @@ public class BlockBreakingMovementBehaviour implements MovementBehaviour {
 			return;
 		}
 
-		int ticksUntilNextProgress = data.getInt("TicksUntilNextProgress");
-		if (ticksUntilNextProgress-- > 0) {
-			data.putInt("TicksUntilNextProgress", ticksUntilNextProgress);
-			return;
-		}
 
 		Level world = context.world;
 		BlockPos breakingPos = NbtUtils.readBlockPos(data.getCompound("BreakingPos"));
-		int destroyProgress = data.getInt("Progress");
+		float destroyProgress = data.getFloat("Progress");
 		int id = data.getInt("BreakerId");
 		BlockState stateToBreak = world.getBlockState(breakingPos);
 		float blockHardness = stateToBreak.getDestroySpeed(world, breakingPos);
@@ -174,7 +172,6 @@ public class BlockBreakingMovementBehaviour implements MovementBehaviour {
 			if (destroyProgress != 0) {
 				destroyProgress = 0;
 				data.remove("Progress");
-				data.remove("TicksUntilNextProgress");
 				data.remove("BreakingPos");
 				world.destroyBlockProgress(id, breakingPos, -1);
 			}
@@ -183,11 +180,24 @@ public class BlockBreakingMovementBehaviour implements MovementBehaviour {
 		}
 
 		float breakSpeed = getBlockBreakingSpeed(context);
-		destroyProgress += Mth.clamp((int) (breakSpeed / blockHardness), 1, 10 - destroyProgress);
+		if(context.contraption.entity instanceof ControlledContraptionEntity) {
+			IControlContraption con = ((ControlledContraptionEntity)context.contraption.entity).getController();
+			if(con instanceof MechanicalBearingBlockEntity) {
+				MechanicalBearingBlockEntity bearing = (MechanicalBearingBlockEntity) con;
+				if(bearing.storedEnergy <= 0) {
+					breakSpeed = 0;
+				}
+				bearing.storedEnergy -= getEnergyToBreak(stateToBreak, blockHardness) * breakSpeed/(30*blockHardness);
+				if(bearing.storedEnergy < 0) {
+					bearing.storedEnergy = 0;
+				}
+			}
+		}
+		destroyProgress += breakSpeed;
 		world.playSound(null, breakingPos, stateToBreak.getSoundType()
 			.getHitSound(), SoundSource.NEUTRAL, .25f, 1);
 
-		if (destroyProgress >= 10) {
+		if (destroyProgress >= blockHardness * 30) {
 			world.destroyBlockProgress(id, breakingPos, -1);
 
 			// break falling blocks from top to bottom
@@ -203,17 +213,17 @@ public class BlockBreakingMovementBehaviour implements MovementBehaviour {
 			if (shouldDestroyStartBlock(stateToBreak))
 				destroyBlock(context, breakingPos);
 			onBlockBroken(context, ogPos, stateToBreak);
-			ticksUntilNextProgress = -1;
 			data.remove("Progress");
-			data.remove("TicksUntilNextProgress");
 			data.remove("BreakingPos");
 			return;
 		}
 
-		ticksUntilNextProgress = (int) (blockHardness / breakSpeed);
-		world.destroyBlockProgress(id, breakingPos, (int) destroyProgress);
-		data.putInt("TicksUntilNextProgress", ticksUntilNextProgress);
-		data.putInt("Progress", destroyProgress);
+		world.destroyBlockProgress(id, breakingPos, (int)(destroyProgress / (blockHardness * 3)));
+		data.putFloat("Progress", destroyProgress);
+	}
+
+	private float getEnergyToBreak(BlockState stateToBreak, float blockHardness) {
+		return 1200 * blockHardness;
 	}
 
 	protected void destroyBlock(MovementContext context, BlockPos breakingPos) {
