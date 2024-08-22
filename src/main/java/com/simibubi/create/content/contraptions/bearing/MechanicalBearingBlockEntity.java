@@ -473,7 +473,7 @@ public class MechanicalBearingBlockEntity extends KineticBlockEntity
 			float pulledFromNetwork = pullEnergy - storedEnergy;
 			storedEnergy = 0;
 			net.setSpeed((float)(Math.signum(net.getSpeed()) * Math.sqrt(net.getSpeed() * net.getSpeed() - 2 * pulledFromNetwork / net.getEffectiveInertia())));
-			return 0;
+			return pullEnergy;
 		} else {
 			float pulled = storedEnergy + networkEnergy;
 			storedEnergy = 0;
