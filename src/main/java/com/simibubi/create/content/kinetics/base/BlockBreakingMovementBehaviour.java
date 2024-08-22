@@ -184,13 +184,9 @@ public class BlockBreakingMovementBehaviour implements MovementBehaviour {
 			IControlContraption con = ((ControlledContraptionEntity)context.contraption.entity).getController();
 			if(con instanceof MechanicalBearingBlockEntity) {
 				MechanicalBearingBlockEntity bearing = (MechanicalBearingBlockEntity) con;
-				if(bearing.storedEnergy <= 0) {
-					breakSpeed = 0;
-				}
-				bearing.storedEnergy -= getEnergyToBreak(stateToBreak, blockHardness) * breakSpeed/(30*blockHardness);
-				if(bearing.storedEnergy < 0) {
-					bearing.storedEnergy = 0;
-				}
+				float energyCost = getEnergyToBreak(stateToBreak, blockHardness) * breakSpeed/(30*blockHardness);
+				float pulledEnergy = bearing.pullStoredEnergy(energyCost, true);
+				breakSpeed *= pulledEnergy / energyCost;
 			}
 		}
 		destroyProgress += breakSpeed;

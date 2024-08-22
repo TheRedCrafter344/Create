@@ -92,13 +92,13 @@ public class ValveHandleBlockEntity extends HandCrankBlockEntity {
 		super.tick();
 		if(inUse == 0 && isTurning != 0 && !level.isClientSide() && network != null) {
 			KineticNetwork network = getOrCreateNetwork();
-			float speed = network.speed;
+			float speed = network.getSpeed(); //TODO this sucks ass
 			float speedReduction = isTurning;
 			isTurning = 0;
 			if(Math.signum(speed - speedReduction) != Math.signum(speed)) {
-				network.speed = 0;
+				network.setSpeed(0);
 			} else {
-				network.speed -= speedReduction;
+				network.setSpeed(network.getSpeed() - speedReduction);
 			}
 			network.sendToClient();
 		}
@@ -158,7 +158,7 @@ public class ValveHandleBlockEntity extends HandCrankBlockEntity {
 
 		//onSpeedChanged(this.speed);
 		
-		network.speed += rotationSpeed;
+		network.setSpeed(network.getSpeed() + rotationSpeed);
 		network.sendToClient();
 		isTurning = rotationSpeed;
 		cooldown = 4;

@@ -236,7 +236,7 @@ public class KineticsManager {
 		if(conserveMomentum) {
 			float i1s2s2 = net1.getEffectiveInertia() * initialMultiplier2 * initialMultiplier2;
 			float i2rs1 = net2.getEffectiveInertia() * rs1;
-			net1.speed = (i1s2s2*net1.getSpeed() + i2rs1*initialMultiplier2*net2.getSpeed()) / (i1s2s2 + i2rs1*rs1);
+			net1.setSpeed((i1s2s2*net1.getSpeed() + i2rs1*initialMultiplier2*net2.getSpeed()) / (i1s2s2 + i2rs1*rs1));
 		}
 		Iterator<Entry<KineticBlockEntity, Float>> iter = net2.loadedMembers.entrySet().iterator();
 		float speedMultiplierMultiplier = rs1 / initialMultiplier2;

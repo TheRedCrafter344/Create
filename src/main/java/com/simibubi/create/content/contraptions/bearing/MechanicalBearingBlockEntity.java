@@ -46,7 +46,7 @@ public class MechanicalBearingBlockEntity extends KineticBlockEntity
 
 	private boolean wasStalled = false;
 	
-	public float storedEnergy = 0;
+	private float storedEnergy = 0;
 	
 	public MechanicalBearingBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
@@ -272,7 +272,7 @@ public class MechanicalBearingBlockEntity extends KineticBlockEntity
 					KineticNetwork net = getOrCreateNetwork();
 					net.stickEffectiveInertia(getContraptionInertia() * speedMultiplier * speedMultiplier);
 					net.updateEffectiveInertia();
-					net.speed = (float) (Math.signum(net.speed) * Math.sqrt(net.speed * net.speed + 2 * storedEnergy / net.getEffectiveInertia()));
+					net.setSpeed( (float) (Math.signum(net.getSpeed()) * Math.sqrt(net.getSpeed() * net.getSpeed() + 2 * storedEnergy / net.getEffectiveInertia())));
 					storedEnergy = 0;
 				}
 			}
@@ -446,5 +446,39 @@ public class MechanicalBearingBlockEntity extends KineticBlockEntity
 	@Override
 	public boolean shouldCreateNetwork() {
 		return true;
+	}
+	
+	public float getStoredEnergy() {
+		return storedEnergy;
+	}
+	
+	public void setStoredEnergy(float storedEnergy) {
+		this.storedEnergy = storedEnergy;
+	}
+	
+	//returns how much energy was actually pulled
+	public float pullStoredEnergy(float pullEnergy, boolean pullFromNetwork) {
+		if(storedEnergy >= pullEnergy) {
+			storedEnergy -= pullEnergy;
+			return pullEnergy;
+		} 
+		if(!hasNetwork() || !pullFromNetwork) {
+			float pulled = storedEnergy;
+			storedEnergy = 0;
+			return pulled;
+		}
+		KineticNetwork net = getOrCreateNetwork();
+		float networkEnergy = 0.5f * net.getEffectiveInertia() * net.getSpeed() * net.getSpeed();
+		if(storedEnergy + networkEnergy >= pullEnergy) {
+			float pulledFromNetwork = pullEnergy - storedEnergy;
+			storedEnergy = 0;
+			net.setSpeed((float)(Math.signum(net.getSpeed()) * Math.sqrt(net.getSpeed() * net.getSpeed() - 2 * pulledFromNetwork / net.getEffectiveInertia())));
+			return 0;
+		} else {
+			float pulled = storedEnergy + networkEnergy;
+			storedEnergy = 0;
+			net.setSpeed(0);
+			return pulled;
+		}
 	}
 }

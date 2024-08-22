@@ -31,7 +31,7 @@ public class KineticNetwork {
 	private static final int TICKS_PER_CLIENT_UPDATE = 5;
 	private int ticksTilSendToClient = TICKS_PER_CLIENT_UPDATE;
 	
-	public float speed; //rpm = 0.10472 rad/s
+	private float speed; //rpm = 0.10472 rad/s
 	
 	private float loadedEffectiveInertia; //IU = ()
 	private float effectiveTorque; //TU (1TU = 1rpm / s / IU)
@@ -163,5 +163,13 @@ public class KineticNetwork {
 	
 	public Long getId() {
 		return id;
+	}
+	
+	public void setSpeed(float speed) {
+		float oldSpeed = this.speed;
+		this.speed = speed;
+		if(speed != oldSpeed) {
+			for(KineticBlockEntity be : loadedMembers.keySet()) be.onSpeedChanged(oldSpeed * loadedMembers.get(be));
+		}
 	}
 }
