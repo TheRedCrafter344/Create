@@ -7,6 +7,7 @@ import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.content.contraptions.AssemblyException;
 import com.simibubi.create.content.contraptions.ControlledContraptionEntity;
 import com.simibubi.create.content.contraptions.IDisplayAssemblyExceptions;
+import com.simibubi.create.content.contraptions.IProvideActorEnergy;
 import com.simibubi.create.content.kinetics.KineticNetwork;
 import com.simibubi.create.content.kinetics.base.KineticBlock;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
@@ -32,7 +33,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import net.minecraft.world.phys.Vec3;
 
 public class MechanicalBearingBlockEntity extends KineticBlockEntity
-	implements IBearingBlockEntity, IDisplayAssemblyExceptions {
+	implements IBearingBlockEntity, IDisplayAssemblyExceptions, IProvideActorEnergy {
 
 	protected ControlledContraptionEntity movedContraption;
 	protected float angle;
@@ -448,14 +449,17 @@ public class MechanicalBearingBlockEntity extends KineticBlockEntity
 		return true;
 	}
 	
+	@Override
 	public float getStoredEnergy() {
 		return storedEnergy;
 	}
 	
+	@Override
 	public void setStoredEnergy(float storedEnergy) {
 		this.storedEnergy = storedEnergy;
 	}
 	
+	@Override
 	//returns how much energy was actually pulled
 	public float pullStoredEnergy(float pullEnergy, boolean pullFromNetwork) {
 		if(storedEnergy >= pullEnergy) {

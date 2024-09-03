@@ -34,7 +34,7 @@ public class KineticNetwork {
 	private float speed; //rpm = 0.10472 rad/s
 	
 	private float loadedEffectiveInertia; //IU = ()
-	private float effectiveTorque; //TU (1TU = 1rpm / s / IU)
+	//TU (1TU = 1rpm / s / IU)
 	//Note of course that effective values are not the real physical values.
 	
 	//declare:: 1 FE = energy of 1 IU moving at 1 rpm = IU * rpm^2
@@ -51,10 +51,21 @@ public class KineticNetwork {
 	
 	public void tick() {
 		if(Math.abs(getEffectiveInertia()) < 0.01f) return;
+		if(getSize() == 0) return;
 		float timeStep = 0.05f;
-		updateEffectiveTorque();
 		float oldSpeed = speed;
-		speed += timeStep * getEffectiveTorque() / getEffectiveInertia(); //forward euler, probably works fine
+		float inertia = getEffectiveInertia();
+		/*
+		float k1 = getEffectiveTorque(speed) / inertia;
+		float k2 = getEffectiveTorque(speed + timeStep*k1/2) / inertia;
+		float k3 = getEffectiveTorque(speed + timeStep*k2/2) / inertia;
+		float k4 = getEffectiveTorque(speed + timeStep*k3) / inertia;
+		
+		speed += timeStep * (1/6f*k1 + 1/3f*k2 + 1/3f*k3 + 1/6f*k4);
+		*/
+		
+		speed += timeStep * getEffectiveTorque(speed) / inertia;
+		
 		//if(speed > MAX_SPEED) speed = MAX_SPEED;
 		if(oldSpeed != 0 && Math.signum(speed) != Math.signum(oldSpeed)) speed = 0;
 		if(speed != oldSpeed) {
@@ -145,16 +156,12 @@ public class KineticNetwork {
 		return speed;
 	}
 	
-	public float getEffectiveTorque() {
-		return effectiveTorque;
-	}
-	
-	public void updateEffectiveTorque() {
+	public float getEffectiveTorque(float speed) {
 		float torque = 0;
 		for(Entry<KineticBlockEntity, Float> member : loadedMembers.entrySet()) {
 			torque += member.getKey().getTorque(speed * member.getValue()) * member.getValue();
 		}
-		effectiveTorque = torque;
+		return torque;
 	}
 	
 	public int getSize() {

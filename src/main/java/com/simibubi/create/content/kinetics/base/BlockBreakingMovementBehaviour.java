@@ -4,6 +4,7 @@ import com.simibubi.create.Create;
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.content.contraptions.ControlledContraptionEntity;
 import com.simibubi.create.content.contraptions.IControlContraption;
+import com.simibubi.create.content.contraptions.IProvideActorEnergy;
 import com.simibubi.create.content.contraptions.OrientedContraptionEntity;
 import com.simibubi.create.content.contraptions.bearing.MechanicalBearingBlockEntity;
 import com.simibubi.create.content.contraptions.behaviour.MovementBehaviour;
@@ -182,10 +183,10 @@ public class BlockBreakingMovementBehaviour implements MovementBehaviour {
 		float breakSpeed = getBlockBreakingSpeed(context);
 		if(context.contraption.entity instanceof ControlledContraptionEntity) {
 			IControlContraption con = ((ControlledContraptionEntity)context.contraption.entity).getController();
-			if(con instanceof MechanicalBearingBlockEntity) {
-				MechanicalBearingBlockEntity bearing = (MechanicalBearingBlockEntity) con;
+			if(con instanceof IProvideActorEnergy) {
+				IProvideActorEnergy energyProvider = (IProvideActorEnergy) con;
 				float energyCost = getEnergyToBreak(stateToBreak, blockHardness) * breakSpeed/(30*blockHardness);
-				float pulledEnergy = bearing.pullStoredEnergy(energyCost, true);
+				float pulledEnergy = energyProvider.pullStoredEnergy(energyCost, true);
 				breakSpeed *= pulledEnergy / energyCost;
 			}
 		}
