@@ -2,7 +2,6 @@ package com.simibubi.create.content.kinetics.base;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import com.jozufozu.flywheel.backend.Backend;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.simibubi.create.AllBlocks;
@@ -14,6 +13,7 @@ import com.simibubi.create.foundation.render.SuperByteBufferCache;
 import com.simibubi.create.foundation.utility.AnimationTickHolder;
 import com.simibubi.create.foundation.utility.Color;
 
+import dev.engine_room.flywheel.api.visualization.VisualizationManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -45,12 +45,11 @@ public class KineticBlockEntityRenderer<T extends KineticBlockEntity> extends Sa
 	@Override
 	protected void renderSafe(T be, float partialTicks, PoseStack ms, MultiBufferSource buffer,
 		int light, int overlay) {
-		if (Backend.canUseInstancing(be.getLevel())) return;
+		if (VisualizationManager.supportsVisualization(be.getLevel())) return;
 
 		BlockState state = getRenderedBlockState(be);
 		RenderType type = getRenderType(be, state);
-		if (type != null)
-			renderRotatingBuffer(be, getRotatedModel(be, state), ms, buffer.getBuffer(type), light);
+		renderRotatingBuffer(be, getRotatedModel(be, state), ms, buffer.getBuffer(type), light);
 	}
 
 	protected BlockState getRenderedBlockState(T be) {
@@ -65,7 +64,7 @@ public class KineticBlockEntityRenderer<T extends KineticBlockEntity> extends Sa
 		for (RenderType type : REVERSED_CHUNK_BUFFER_LAYERS)
 			if (typeSet.contains(type))
 				return type;
-		return null;
+		return RenderType.cutoutMipped();
 	}
 
 	protected SuperByteBuffer getRotatedModel(T be, BlockState state) {
@@ -83,8 +82,8 @@ public class KineticBlockEntityRenderer<T extends KineticBlockEntity> extends Sa
 		standardKineticRotationTransform(superBuffer, be, light).renderInto(ms, buffer);
 	}
 
-	public static float getAngleForTe(KineticBlockEntity be, final BlockPos pos, Axis axis) {
-		//float time = AnimationTickHolder.getRenderTime(be.getLevel());
+	public static float getAngleForBe(KineticBlockEntity be, final BlockPos pos, Axis axis) {
+        //float time = AnimationTickHolder.getRenderTime(be.getLevel());
 		float offset = getRotationOffsetForPosition(be, pos, axis);
 		//float angle = ((time * be.getSpeed() * 3f / 10 + offset) % 360) / 180 * (float) Math.PI;
 		return (be.getRenderAngle(AnimationTickHolder.getPartialTicks(be.getLevel())) + offset) / 180 * (float) Math.PI;
@@ -95,13 +94,13 @@ public class KineticBlockEntityRenderer<T extends KineticBlockEntity> extends Sa
 		final BlockPos pos = be.getBlockPos();
 		Axis axis = ((IRotate) be.getBlockState()
 			.getBlock()).getRotationAxis(be.getBlockState());
-		return kineticRotationTransform(buffer, be, axis, getAngleForTe(be, pos, axis), light);
+		return kineticRotationTransform(buffer, be, axis, getAngleForBe(be, pos, axis), light);
 	}
 
 	public static SuperByteBuffer kineticRotationTransform(SuperByteBuffer buffer, KineticBlockEntity be, Axis axis,
 		float angle, int light) {
 		buffer.light(light);
-		buffer.rotateCentered(Direction.get(AxisDirection.POSITIVE, axis), angle);
+		buffer.rotateCentered(angle, Direction.get(AxisDirection.POSITIVE, axis));
 
 		
 		buffer.color(Color.WHITE);
