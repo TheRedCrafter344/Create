@@ -46,7 +46,7 @@ public class GearboxVisual extends KineticBlockEntityVisual<GearboxBlockEntity> 
 
 			key.setRotationAxis(axis)
 					.setRotationalSpeed(getSpeed(direction))
-					.setRotationOffset(getRotationOffset(axis)).setColor(blockEntity)
+					.setRotationOffset(getRotationOffset(axis, false)).setColor(blockEntity)
 					.setPosition(getVisualPosition())
 					.light(blockLight, skyLight)
 					.setChanged();

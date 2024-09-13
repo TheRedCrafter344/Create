@@ -3,6 +3,7 @@ package com.simibubi.create.content.kinetics.flywheel;
 import java.util.function.Consumer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityVisual;
 import com.simibubi.create.content.kinetics.base.RotatingInstance;
 import com.simibubi.create.foundation.render.AllInstanceTypes;
@@ -18,13 +19,13 @@ import dev.engine_room.flywheel.lib.transform.TransformStack;
 import dev.engine_room.flywheel.lib.visual.SimpleDynamicVisual;
 import net.minecraft.core.Direction;
 
-public class FlywheelVisual extends KineticBlockEntityVisual<FlywheelBlockEntity> implements SimpleDynamicVisual {
+public class FlywheelVisual extends KineticBlockEntityVisual<KineticBlockEntity> implements SimpleDynamicVisual {
 
 	protected final RotatingInstance shaft;
 	protected final TransformedInstance wheel;
 	protected float lastAngle = Float.NaN;
 
-	public FlywheelVisual(VisualizationContext context, FlywheelBlockEntity blockEntity, float partialTick) {
+	public FlywheelVisual(VisualizationContext context, KineticBlockEntity blockEntity, float partialTick) {
 		super(context, blockEntity, partialTick);
 
 		shaft = setup(instancerProvider.instancer(AllInstanceTypes.ROTATING, VirtualRenderHelper.blockModel(shaft()))
@@ -32,16 +33,13 @@ public class FlywheelVisual extends KineticBlockEntityVisual<FlywheelBlockEntity
 		wheel = instancerProvider.instancer(InstanceTypes.TRANSFORMED, VirtualRenderHelper.blockModel(blockState))
 			.createInstance();
 
-		animate(blockEntity.angle);
+		animate(blockEntity.getRenderAngle(0));
 	}
 
 	@Override
 	public void beginFrame(DynamicVisual.Context ctx) {
 
-		float partialTicks = ctx.partialTick();
-
-		float speed = blockEntity.visualSpeed.getValue(partialTicks) * 3 / 10f;
-		float angle = blockEntity.angle + speed * partialTicks;
+		float angle = blockEntity.getRenderAngle(ctx.partialTick());
 
 		if (Math.abs(angle - lastAngle) < 0.001)
 			return;

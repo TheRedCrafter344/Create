@@ -103,14 +103,11 @@ import com.simibubi.create.content.kinetics.fan.EncasedFanBlockEntity;
 import com.simibubi.create.content.kinetics.fan.EncasedFanRenderer;
 import com.simibubi.create.content.kinetics.fan.FanVisual;
 import com.simibubi.create.content.kinetics.fan.NozzleBlockEntity;
-import com.simibubi.create.content.kinetics.flywheel.FlywheelBlockEntity;
-import com.simibubi.create.content.kinetics.flywheel.FlywheelRenderer;
 import com.simibubi.create.content.kinetics.flywheel.FlywheelVisual;
 import com.simibubi.create.content.kinetics.gantry.GantryShaftBlockEntity;
 import com.simibubi.create.content.kinetics.gauge.GaugeRenderer;
 import com.simibubi.create.content.kinetics.gauge.GaugeVisual;
 import com.simibubi.create.content.kinetics.gauge.SpeedGaugeBlockEntity;
-import com.simibubi.create.content.kinetics.gauge.StressGaugeBlockEntity;
 import com.simibubi.create.content.kinetics.gearbox.GearboxBlockEntity;
 import com.simibubi.create.content.kinetics.gearbox.GearboxRenderer;
 import com.simibubi.create.content.kinetics.gearbox.GearboxVisual;
@@ -592,11 +589,11 @@ public class AllBlockEntityTypes {
 		.renderer(() -> KineticBlockEntityRenderer::new)
 		.register();
 
-	public static final BlockEntityEntry<FlywheelBlockEntity> FLYWHEEL = REGISTRATE
-		.blockEntity("flywheel", FlywheelBlockEntity::new)
+	public static final BlockEntityEntry<KineticBlockEntity> FLYWHEEL = REGISTRATE
+		.blockEntity("flywheel", KineticBlockEntity::new)
 		.visual(() -> FlywheelVisual::new, false)
 		.validBlocks(AllBlocks.FLYWHEEL)
-		.renderer(() -> FlywheelRenderer::new)
+		.renderer(() -> KineticBlockEntityRenderer::new)
 		.register();
 
 	public static final BlockEntityEntry<MillstoneBlockEntity> MILLSTONE = REGISTRATE
@@ -694,13 +691,6 @@ public class AllBlockEntityTypes {
 		.visual(() -> GaugeVisual.Speed::new)
 		.validBlocks(AllBlocks.SPEEDOMETER)
 		.renderer(() -> GaugeRenderer::speed)
-		.register();
-
-	public static final BlockEntityEntry<StressGaugeBlockEntity> STRESSOMETER = REGISTRATE
-		.blockEntity("stressometer", StressGaugeBlockEntity::new)
-		.visual(() -> GaugeVisual.Stress::new)
-		.validBlocks(AllBlocks.STRESSOMETER)
-		.renderer(() -> GaugeRenderer::stress)
 		.register();
 
 	public static final BlockEntityEntry<AnalogLeverBlockEntity> ANALOG_LEVER = REGISTRATE
