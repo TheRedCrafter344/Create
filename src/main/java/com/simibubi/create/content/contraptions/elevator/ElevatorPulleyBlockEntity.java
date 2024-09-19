@@ -232,12 +232,12 @@ public class ElevatorPulleyBlockEntity extends PulleyBlockEntity {
 	}
 
 	@Override
-	protected void assemble() throws AssemblyException {
+	protected boolean assemble() throws AssemblyException {
 		if (!(level.getBlockState(worldPosition)
 			.getBlock() instanceof ElevatorPulleyBlock))
-			return;
+			return false;
 		if (getSpeed() == 0)
-			return;
+			return false;
 
 		int maxLength = AllConfigs.server().kinetics.maxRopeLength.get();
 		int i = 1;
@@ -267,7 +267,7 @@ public class ElevatorPulleyBlockEntity extends PulleyBlockEntity {
 
 			boolean canAssembleStructure = contraption.assemble(level, anchor);
 			if (!canAssembleStructure && getSpeed() > 0)
-				return;
+				return false;
 
 			if (!contraption.getBlocks()
 				.isEmpty()) {
@@ -309,6 +309,7 @@ public class ElevatorPulleyBlockEntity extends PulleyBlockEntity {
 		clientOffsetDiff = 0;
 		running = true;
 		sendData();
+		return true;
 	}
 
 	@Override

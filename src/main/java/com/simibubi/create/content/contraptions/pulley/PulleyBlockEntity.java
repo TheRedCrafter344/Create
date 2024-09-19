@@ -100,12 +100,12 @@ public class PulleyBlockEntity extends LinearActuatorBlockEntity implements Thre
 	}
 
 	@Override
-	protected void assemble() throws AssemblyException {
+	protected boolean assemble() throws AssemblyException {
 		if (!(level.getBlockState(worldPosition)
 			.getBlock() instanceof PulleyBlock))
-			return;
+			return false;
 		if (getSpeed() == 0 && mirrorParent == null)
-			return;
+			return false;
 		int maxLength = AllConfigs.server().kinetics.maxRopeLength.get();
 		int i = 1;
 		while (i <= maxLength) {
@@ -118,9 +118,9 @@ public class PulleyBlockEntity extends LinearActuatorBlockEntity implements Thre
 		}
 		offset = i - 1;
 		if (offset >= getExtensionRange() && getSpeed() > 0)
-			return;
+			return false;
 		if (offset <= 0 && getSpeed() < 0)
-			return;
+			return false;
 
 		// Collect Construct
 		if (!level.isClientSide && mirrorParent == null) {
@@ -138,7 +138,7 @@ public class PulleyBlockEntity extends LinearActuatorBlockEntity implements Thre
 			}
 
 			if (!canAssembleStructure && getSpeed() > 0)
-				return;
+				return false;
 
 			removeRopes();
 
@@ -171,6 +171,7 @@ public class PulleyBlockEntity extends LinearActuatorBlockEntity implements Thre
 		clientOffsetDiff = 0;
 		running = true;
 		sendData();
+		return true;
 	}
 
 	private void removeRopes() {
@@ -397,5 +398,11 @@ public class PulleyBlockEntity extends LinearActuatorBlockEntity implements Thre
 
 	public BlockPos getMirrorParent() {
 		return mirrorParent;
+	}
+
+	@Override
+	public float getContraptionInertia() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }

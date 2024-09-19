@@ -364,7 +364,8 @@ public class MechanicalBearingBlockEntity extends KineticBlockEntity
 		comY /= totalMass;
 		comZ /= totalMass;
 		Vec3 com = VecHelper.rotate(new Vec3(comX, comY, comZ), angle, axis);
-		Vec3 torqueVec = com.cross(new Vec3(0, -GRAVITY * totalMass, 0));
+		Vec3 gravity = new Vec3(0, -GRAVITY * totalMass, 0); //TODO rotate this in case we are in a rotated grid
+		Vec3 torqueVec = com.cross(gravity);
 		float torque = (float) (axis == Axis.X ? torqueVec.x :
 								axis == Axis.Y ? torqueVec.y :
 								axis == Axis.Z ? torqueVec.z : 0);

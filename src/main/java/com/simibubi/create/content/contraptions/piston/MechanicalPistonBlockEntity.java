@@ -7,10 +7,13 @@ import com.simibubi.create.content.contraptions.ContraptionCollider;
 import com.simibubi.create.content.contraptions.ControlledContraptionEntity;
 import com.simibubi.create.content.contraptions.DirectionalExtenderScrollOptionSlot;
 import com.simibubi.create.content.contraptions.piston.MechanicalPistonBlock.PistonState;
+import com.simibubi.create.content.kinetics.base.DirectionalAxisKineticBlock;
 import com.simibubi.create.content.kinetics.base.IRotate;
+import com.simibubi.create.content.kinetics.base.KineticBlock;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueBoxTransform;
 import com.simibubi.create.foundation.utility.ServerSpeedProvider;
+import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -21,6 +24,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.StructureBlockInfo;
 import net.minecraft.world.phys.Vec3;
 
 public class MechanicalPistonBlockEntity extends LinearActuatorBlockEntity {
@@ -31,7 +35,7 @@ public class MechanicalPistonBlockEntity extends LinearActuatorBlockEntity {
 	public MechanicalPistonBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
 	}
-
+	
 	@Override
 	protected void read(CompoundTag compound, boolean clientPacket) {
 		extensionLength = compound.getInt("ExtensionLength");
@@ -45,17 +49,17 @@ public class MechanicalPistonBlockEntity extends LinearActuatorBlockEntity {
 	}
 
 	@Override
-	public void assemble() throws AssemblyException {
+	public boolean assemble() throws AssemblyException {
 		if (!(level.getBlockState(worldPosition)
 			.getBlock() instanceof MechanicalPistonBlock))
-			return;
+			return false;
 
 		Direction direction = getBlockState().getValue(BlockStateProperties.FACING);
 
 		// Collect Construct
 		PistonContraption contraption = new PistonContraption(direction, getMovementSpeed() < 0);
 		if (!contraption.assemble(level, worldPosition))
-			return;
+			return false;
 
 		Direction positive = Direction.get(AxisDirection.POSITIVE, direction.getAxis());
 		Direction movementDirection =
@@ -64,13 +68,13 @@ public class MechanicalPistonBlockEntity extends LinearActuatorBlockEntity {
 		BlockPos anchor = contraption.anchor.relative(direction, contraption.initialExtensionProgress);
 		if (ContraptionCollider.isCollidingWithWorld(level, contraption, anchor.relative(movementDirection),
 			movementDirection))
-			return;
+			return false;
 
 		// Check if not at limit already
 		extensionLength = contraption.extensionLength;
 		float resultingOffset = contraption.initialExtensionProgress + Math.signum(getMovementSpeed()) * .5f;
 		if (resultingOffset <= 0 || resultingOffset >= extensionLength) {
-			return;
+			return false;
 		}
 
 		// Run
@@ -90,6 +94,8 @@ public class MechanicalPistonBlockEntity extends LinearActuatorBlockEntity {
 		
 		if (contraption.containsBlockBreakers())
 			award(AllAdvancements.CONTRAPTION_ACTORS);
+		
+		return true;
 	}
 
 	@Override
@@ -122,7 +128,7 @@ public class MechanicalPistonBlockEntity extends LinearActuatorBlockEntity {
 
 	@Override
 	public float getMovementSpeed() {
-		float movementSpeed = Mth.clamp(convertToLinear(getSpeed()), -.49f, .49f);
+		float movementSpeed = convertToLinear(getSpeed());
 		if (level.isClientSide)
 			movementSpeed *= ServerSpeedProvider.get();
 		Direction pistonDirection = getBlockState().getValue(BlockStateProperties.FACING);
@@ -176,5 +182,64 @@ public class MechanicalPistonBlockEntity extends LinearActuatorBlockEntity {
 		return movedContraption == null ? 0
 			: ((PistonContraption) movedContraption.getContraption()).initialExtensionProgress;
 	}
-
+	
+	@Override
+	public float getContraptionInertia() {
+		float totalMass = 0;
+		for(StructureBlockInfo sblock : movedContraption.getContraption().getBlocks().values()) {
+			float mass = 60; //TODO
+			if(sblock.state().getBlock() instanceof KineticBlock) {
+				mass = 6 * AllConfigs.server().kinetics.getInertia((KineticBlock) sblock.state().getBlock());
+			}
+			totalMass += mass;
+		}
+		return totalMass * 0.373f * 0.373f; //radius of piston attachment squared
+	}
+	
+	public static final float GRAVITY = 10; //TODO
+	
+	@Override
+	public float getTorque(float speed) {
+		if(!running || movedContraption == null || movedContraption.isStalled() || wasMaximallyExtended || wasMinimallyExtended) return super.getTorque(speed);
+		float totalMass = 0;
+		
+		Direction pistonDir = level.getBlockState(worldPosition).getValue(DirectionalAxisKineticBlock.FACING);
+		boolean alongFirst = level.getBlockState(worldPosition).getValue(DirectionalAxisKineticBlock.AXIS_ALONG_FIRST_COORDINATE);
+		Axis shaftAxis = Axis.X;
+		if (pistonDir.getAxis() == Axis.X)
+			shaftAxis = alongFirst ? Axis.Y : Axis.Z;
+		if (pistonDir.getAxis() == Axis.Y)
+			shaftAxis = alongFirst ? Axis.X : Axis.Z;
+		if (pistonDir.getAxis() == Axis.Z)
+			shaftAxis = alongFirst ? Axis.X : Axis.Y;
+		
+		for(StructureBlockInfo sblock : movedContraption.getContraption().getBlocks().values()) {
+			float mass = 60; //TODO
+			if(sblock.state().getBlock() instanceof KineticBlock) {
+				mass = 6 * AllConfigs.server().kinetics.getInertia((KineticBlock) sblock.state().getBlock());
+			}
+			totalMass += mass;
+		}
+		
+		Vec3 gravity = new Vec3(0, -GRAVITY*totalMass, 0); //TODO rotate this in case we are in a rotated grid
+		Vec3 attachmentPoint = getAxisVector(pistonDir.getAxis()).cross(getAxisVector(shaftAxis)).scale(-0.373);
+		Vec3 torqueVec = attachmentPoint.cross(gravity);
+		
+		float torque = (float) (shaftAxis == Axis.X ? torqueVec.x :
+								shaftAxis == Axis.Y ? torqueVec.y :
+								shaftAxis == Axis.Z ? torqueVec.z : 0);
+		return super.getTorque(speed) + torque;
+	}
+	
+	private static Vec3 getAxisVector(Axis axis) {
+		switch(axis) {
+		case X:
+			return new Vec3(1, 0, 0);
+		case Y:
+			return new Vec3(0, 1, 0);
+		case Z:
+			return new Vec3(0, 0, 1);
+		}
+		return new Vec3(0, 0, 0);
+	}
 }

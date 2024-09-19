@@ -278,10 +278,13 @@ public class KineticBlockEntity extends SmartBlockEntity implements IHaveGoggleI
 		return d.getAxisDirection() == AxisDirection.POSITIVE ? axisSpeed : -axisSpeed;
 	}
 
+	//rpm -> m/t
+	//in SI (rad/s -> m/s): ~0.373
 	public static float convertToLinear(float speed) {
 		return speed / 512f;
 	}
 
+	//rpm -> rad/t
 	public static float convertToAngular(float speed) {
 		return speed * 3 / 10f;
 	}
