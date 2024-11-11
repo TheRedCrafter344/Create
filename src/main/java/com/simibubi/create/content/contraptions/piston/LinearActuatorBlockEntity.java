@@ -2,6 +2,7 @@ package com.simibubi.create.content.contraptions.piston;
 
 import java.util.List;
 
+import com.simibubi.create.Create;
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.content.contraptions.AssemblyException;
 import com.simibubi.create.content.contraptions.ContraptionCollider;
@@ -9,6 +10,7 @@ import com.simibubi.create.content.contraptions.ControlledContraptionEntity;
 import com.simibubi.create.content.contraptions.IControlContraption;
 import com.simibubi.create.content.contraptions.IDisplayAssemblyExceptions;
 import com.simibubi.create.content.contraptions.IProvideActorEnergy;
+import com.simibubi.create.content.contraptions.IControlContraption.RotationMode;
 import com.simibubi.create.content.kinetics.KineticNetwork;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
@@ -21,6 +23,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -36,8 +39,6 @@ public abstract class LinearActuatorBlockEntity extends KineticBlockEntity
 	public boolean needsContraption;
 	public ControlledContraptionEntity movedContraption;
 	protected boolean forceMove;
-	protected ScrollOptionBehaviour<MovementMode> movementMode;
-	protected boolean waitingForSpeedChange;
 	protected AssemblyException lastException;
 	protected double sequencedOffsetLimit;
 
@@ -45,10 +46,13 @@ public abstract class LinearActuatorBlockEntity extends KineticBlockEntity
 	protected float clientOffsetDiff;
 
 	protected boolean wasStalled = false;
+	protected boolean wasCollided = false;
 	protected float storedEnergy;
 	
 	protected boolean wasMinimallyExtended = false;
 	protected boolean wasMaximallyExtended = false;
+	
+	protected int ticksAtZeroSpeed = 0;
 	
 	public LinearActuatorBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
 		super(typeIn, pos, state);
@@ -56,16 +60,6 @@ public abstract class LinearActuatorBlockEntity extends KineticBlockEntity
 		forceMove = true;
 		needsContraption = true;
 		sequencedOffsetLimit = -1;
-	}
-
-	@Override
-	public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
-		super.addBehaviours(behaviours);
-		movementMode = new ScrollOptionBehaviour<>(MovementMode.class, Lang.translateDirect("contraptions.movement_mode"),
-			this, getMovementModeSlot());
-		movementMode.withCallback(t -> waitingForSpeedChange = false);
-		behaviours.add(movementMode);
-		registerAwardables(behaviours, AllAdvancements.CONTRAPTION_ACTORS);
 	}
 	
 	@Override
@@ -78,10 +72,7 @@ public abstract class LinearActuatorBlockEntity extends KineticBlockEntity
 		super.tick();
 
 		if (running && hasNetwork() && !level.isClientSide && movedContraption != null) {
-			Direction pistonDirection = getBlockState().getValue(BlockStateProperties.FACING);
-			int movementModifier = pistonDirection.getAxisDirection().getStep()
-					* (pistonDirection.getAxis() == Axis.Z ? -1 : 1);
-			float pistonSpeed = getSpeed() * -movementModifier;
+			float pistonSpeed = getMovementSpeed();
 			if (offset >= getExtensionRange() && !wasMaximallyExtended && pistonSpeed > 0) {
 				wasMaximallyExtended = true;
 				getOrCreateNetwork().updateEffectiveInertia();
@@ -112,38 +103,21 @@ public abstract class LinearActuatorBlockEntity extends KineticBlockEntity
 		if (level.isClientSide)
 			clientOffsetDiff *= .75f;
 
-		if (waitingForSpeedChange) {
-			if (movedContraption != null) {
-				if (level.isClientSide) {
-					float syncSpeed = clientOffsetDiff / 2f;
-					offset += syncSpeed;
-					movedContraption.setContraptionMotion(toMotionVector(syncSpeed));
-					return;
-				}
-				movedContraption.setContraptionMotion(Vec3.ZERO);
-			}
-			return;
-		}
-
 		if (!level.isClientSide && assembleNextTick) {
 			assembleNextTick = false;
 			if (running) {
-				if (getSpeed() == 0) {
-					tryDisassemble();
-					return;
-				} else
-					sendData();
+				tryDisassemble();
+				return;
 			} else {
-				if (getSpeed() != 0)
-					try {
-						if(assemble() && hasNetwork()) {
-							getOrCreateNetwork().stickEffectiveInertia(getContraptionInertia() * speedMultiplier * speedMultiplier);
-							getOrCreateNetwork().updateEffectiveInertia();
-						}
-						lastException = null;
-					} catch (AssemblyException e) {
-						lastException = e;
+				try {
+					if(assemble() && hasNetwork()) {
+						getOrCreateNetwork().stickEffectiveInertia(getContraptionInertia() * speedMultiplier * speedMultiplier);
+						getOrCreateNetwork().updateEffectiveInertia();
 					}
+					lastException = null;
+				} catch (AssemblyException e) {
+					lastException = e;
+				}
 				sendData();
 				return;
 			}
@@ -157,6 +131,21 @@ public abstract class LinearActuatorBlockEntity extends KineticBlockEntity
 			return;
 
 		float movementSpeed = getMovementSpeed();
+		
+		if((Math.abs(movementSpeed) < 0.01 || wasMaximallyExtended || wasMinimallyExtended) && !movedContraption.isStalled()) {
+			if(getMovementMode() == MovementMode.MOVE_PLACE_STATIC
+					|| getMovementMode() == MovementMode.MOVE_PLACE_STATIC_RETURNED && Math.abs(offset - getInitialOffset()) <= 0.5) {
+				if(ticksAtZeroSpeed >= 5) { //TODO config
+					if(movedContraption != null) movedContraption.getContraption().stop(level);
+					tryDisassemble();
+					return;
+				}
+				ticksAtZeroSpeed++;
+			}
+		} else {
+			ticksAtZeroSpeed = 0;
+		}
+		
 		boolean locked = false;
 		if (sequencedOffsetLimit > 0) {
 			sequencedOffsetLimit = Math.max(0, sequencedOffsetLimit - Math.abs(movementSpeed));
@@ -175,10 +164,31 @@ public abstract class LinearActuatorBlockEntity extends KineticBlockEntity
 		if (contraptionPresent) {
 			if (moveAndCollideContraption()) {
 				movedContraption.setContraptionMotion(Vec3.ZERO);
-				offset = getGridOffset(offset);
-				resetContraptionToOffset();
+				//offset = getGridOffset(offset);
+				//resetContraptionToOffset();
 				collided();
 				return;
+			} else if(!level.isClientSide) {
+				if(wasCollided) {
+					wasCollided = false;
+					if(hasNetwork()) {
+						KineticNetwork net = getOrCreateNetwork();
+						net.stickEffectiveInertia(getContraptionInertia() * speedMultiplier * speedMultiplier);
+						net.updateEffectiveInertia();
+						net.setSpeed( (float) (Math.signum(net.getSpeed()) * Math.sqrt(net.getSpeed() * net.getSpeed() + 2 * storedEnergy / net.getEffectiveInertia())));
+						storedEnergy = 0;
+					}
+				}
+				if(!movedContraption.isStalled() && wasStalled) {
+					wasStalled = false;
+					if(hasNetwork()) {
+						KineticNetwork net = getOrCreateNetwork();
+						net.stickEffectiveInertia(getContraptionInertia() * speedMultiplier * speedMultiplier);
+						net.updateEffectiveInertia();
+						net.setSpeed( (float) (Math.signum(net.getSpeed()) * Math.sqrt(net.getSpeed() * net.getSpeed() + 2 * storedEnergy / net.getEffectiveInertia())));
+						storedEnergy = 0;
+					}
+				}
 			}
 		}
 
@@ -191,11 +201,8 @@ public abstract class LinearActuatorBlockEntity extends KineticBlockEntity
 			if (!level.isClientSide) {
 				moveAndCollideContraption();
 				resetContraptionToOffset();
-				tryDisassemble();
-				if (waitingForSpeedChange) {
-					forceMove = true;
-					sendData();
-				}
+				if(getMovementMode() == MovementMode.MOVE_PLACE || (getMovementMode() == MovementMode.MOVE_PLACE_RETURNED && (int) (offset + .5f) == getInitialOffset()))
+					tryDisassemble();
 			}
 			return;
 		}
@@ -222,45 +229,19 @@ public abstract class LinearActuatorBlockEntity extends KineticBlockEntity
 		return interpolatedOffset;
 	}
 
-	
-	@Override
-	public void onSpeedChanged(float prevSpeed) {
-		super.onSpeedChanged(prevSpeed);
-		sequencedOffsetLimit = -1;
-		
-		if (isPassive())
-			return;
-		
-		assembleNextTick = true;
-		waitingForSpeedChange = false;
-
-		if (movedContraption != null && Math.signum(prevSpeed) != Math.signum(getSpeed()) && prevSpeed != 0) {
-			if (!movedContraption.isStalled()) {
-				offset = Math.round(offset * 16) / 16;
-				resetContraptionToOffset();
-			}
-			movedContraption.getContraption()
-				.stop(level);
-		}
-
-		//if (sequenceContext != null && sequenceContext.instruction() == SequencerInstructions.TURN_DISTANCE)
-		//	sequencedOffsetLimit = sequenceContext.getEffectiveValue(getTheoreticalSpeed());
-	}
-	
-
 	@Override
 	public void remove() {
 		this.remove = true;
 		if (!level.isClientSide)
-			disassemble();
+			tryDisassemble();
 		super.remove();
 	}
 
 	@Override
 	protected void write(CompoundTag compound, boolean clientPacket) {
 		compound.putBoolean("Running", running);
-		compound.putBoolean("Waiting", waitingForSpeedChange);
 		compound.putFloat("Offset", offset);
+		compound.putFloat("StoredEnergy", storedEnergy);
 		if (sequencedOffsetLimit >= 0)
 			compound.putDouble("SequencedOffsetLimit", sequencedOffsetLimit);
 		AssemblyException.write(compound, lastException);
@@ -278,8 +259,8 @@ public abstract class LinearActuatorBlockEntity extends KineticBlockEntity
 		float offsetBefore = offset;
 
 		running = compound.getBoolean("Running");
-		waitingForSpeedChange = compound.getBoolean("Waiting");
 		offset = compound.getFloat("Offset");
+		storedEnergy = compound.getFloat("StoredEnergy");
 		sequencedOffsetLimit =
 			compound.contains("SequencedOffsetLimit") ? compound.getDouble("SequencedOffsetLimit") : -1;
 		lastException = AssemblyException.read(compound);
@@ -309,21 +290,21 @@ public abstract class LinearActuatorBlockEntity extends KineticBlockEntity
 	protected abstract int getExtensionRange();
 
 	protected abstract int getInitialOffset();
-
-	protected abstract ValueBoxTransform getMovementModeSlot();
-
+	
 	protected abstract Vec3 toMotionVector(float speed);
 
 	protected abstract Vec3 toPosition(float offset);
 
 	protected void visitNewPosition() {}
 
-	protected boolean tryDisassemble() {
+	protected void tryDisassemble() {
+		/*
 		if (remove) {
 			disassemble();
 			if(hasNetwork()) getOrCreateNetwork().updateEffectiveInertia();
 			return true;
 		}
+		
 		if (getMovementMode() == MovementMode.MOVE_NEVER_PLACE) {
 			waitingForSpeedChange = true;
 			return false;
@@ -333,13 +314,9 @@ public abstract class LinearActuatorBlockEntity extends KineticBlockEntity
 			waitingForSpeedChange = true;
 			return false;
 		}
+		*/
 		disassemble();
 		if(hasNetwork()) getOrCreateNetwork().updateEffectiveInertia();
-		return true;
-	}
-
-	protected MovementMode getMovementMode() {
-		return movementMode.get();
 	}
 
 	protected boolean moveAndCollideContraption() {
@@ -349,16 +326,6 @@ public abstract class LinearActuatorBlockEntity extends KineticBlockEntity
 			movedContraption.setContraptionMotion(Vec3.ZERO);
 			return false;
 		}
-		if(!level.isClientSide && wasStalled) {
-			wasStalled = false;
-			if(hasNetwork()) {
-				KineticNetwork net = getOrCreateNetwork();
-				net.stickEffectiveInertia(getContraptionInertia() * speedMultiplier * speedMultiplier);
-				net.updateEffectiveInertia();
-				net.setSpeed( (float) (Math.signum(net.getSpeed()) * Math.sqrt(net.getSpeed() * net.getSpeed() + 2 * storedEnergy / net.getEffectiveInertia())));
-				storedEnergy = 0;
-			}
-		}
 		Vec3 motion = getMotionVector();
 		movedContraption.setContraptionMotion(getMotionVector());
 		movedContraption.move(motion.x, motion.y, motion.z);
@@ -366,13 +333,18 @@ public abstract class LinearActuatorBlockEntity extends KineticBlockEntity
 	}
 
 	protected void collided() {
-		if (level.isClientSide) {
-			waitingForSpeedChange = true;
-			return;
-		}
 		offset = getGridOffset(offset - getMovementSpeed());
 		resetContraptionToOffset();
-		tryDisassemble();
+		if (level.isClientSide) {
+			return;
+		}
+		if(getMovementMode() == MovementMode.MOVE_PLACE || (getMovementMode() == MovementMode.MOVE_PLACE_RETURNED && (int) (offset + .5f) == getInitialOffset()))
+			tryDisassemble();
+		else if(!wasCollided) {
+			wasCollided = true;
+			if(hasNetwork()) getOrCreateNetwork().updateEffectiveInertia();
+			storedEnergy += 0.5f * getContraptionInertia() * getSpeed() * getSpeed();
+		}
 	}
 
 	protected void resetContraptionToOffset() {
@@ -382,7 +354,7 @@ public abstract class LinearActuatorBlockEntity extends KineticBlockEntity
 			return;
 		Vec3 vec = toPosition(offset);
 		movedContraption.setPos(vec.x, vec.y, vec.z);
-		if (getSpeed() == 0 || waitingForSpeedChange)
+		if (getSpeed() == 0)
 			movedContraption.setContraptionMotion(Vec3.ZERO);
 	}
 
@@ -403,10 +375,10 @@ public abstract class LinearActuatorBlockEntity extends KineticBlockEntity
 	public void onStall() {
 		if (!level.isClientSide) {
 			forceMove = true;
-			sendData();
 			wasStalled = true;
 			if(hasNetwork()) getOrCreateNetwork().updateEffectiveInertia();
 			storedEnergy += 0.5f * getContraptionInertia() * getSpeed() * getSpeed();
+			sendData();
 		}
 	}
 
@@ -447,7 +419,8 @@ public abstract class LinearActuatorBlockEntity extends KineticBlockEntity
 	
 	@Override
 	public float getInertia() {
-		return super.getInertia() + (running && movedContraption != null && !wasStalled && !wasMaximallyExtended && !wasMinimallyExtended ? getContraptionInertia() : 0);
+		return super.getInertia() + 
+				(running && movedContraption != null && !wasStalled && !wasCollided && !wasMaximallyExtended && !wasMinimallyExtended ? getContraptionInertia() : 0);
 	}
 	
 	@Override
@@ -467,7 +440,7 @@ public abstract class LinearActuatorBlockEntity extends KineticBlockEntity
 			storedEnergy -= pullEnergy;
 			return pullEnergy;
 		} 
-		if(!hasNetwork() || !pullFromNetwork) {
+		if(!hasNetwork() || !pullFromNetwork || !pullsEnergyFromNetwork()) {
 			float pulled = storedEnergy;
 			storedEnergy = 0;
 			return pulled;
@@ -485,5 +458,34 @@ public abstract class LinearActuatorBlockEntity extends KineticBlockEntity
 			net.setSpeed(0);
 			return pulled;
 		}
+	}
+	
+	@Override
+	public boolean shouldCreateNetwork() {
+		return true;
+	}
+	
+	public Vec3 smallG() {
+		return new Vec3(0, -10, 0); //TODO rotate this if we are in a rotated grid, also per-dimension config and shit
+	}
+	
+	protected abstract MovementMode getMovementMode();
+	
+	public boolean pullsEnergyFromNetwork() {
+		return true;
+	}
+	
+	@Override
+	public boolean addToGoggleTooltip(List<Component> tooltip, boolean isSneaking) {
+		if(network == null) {
+			Lang.text("Not in network").forGoggles(tooltip);
+		} else {
+			Lang.text("Network ID: " + network).forGoggles(tooltip);
+			Lang.text("Speed: " + getSpeed()).forGoggles(tooltip);
+			Lang.text("Speed Multiplier: " + speedMultiplier).forGoggles(tooltip);
+			Lang.text("Network Effective Inertia: " + getOrCreateClientNetwork().getEffectiveInertia()).forGoggles(tooltip);
+			Lang.text("Stored Energy: " + storedEnergy).forGoggles(tooltip);
+		}
+		return true;
 	}
 }

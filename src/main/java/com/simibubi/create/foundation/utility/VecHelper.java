@@ -355,4 +355,48 @@ public class VecHelper {
 		return Math.abs(getCoordinate(pos, axis) - (blockPos.get(axis) + (face.getAxisDirection() == Direction.AxisDirection.POSITIVE ? 1 : 0)));
 	}
 
+	public static Vec3 getAxisVector(Axis axis) {
+		switch(axis) {
+		case X:
+			return new Vec3(1, 0, 0);
+		case Y:
+			return new Vec3(0, 1, 0);
+		case Z:
+			return new Vec3(0, 0, 1);
+		}
+		return new Vec3(0, 0, 0);
+	}
+	
+	public static int getQuadrant(Vec3 vec, Axis axis) {
+		if(vec == null || axis == null) return 0;
+		double c1 = 0;
+		double c2 = 0;
+		switch(axis) {
+		case X:
+			c1 = vec.y;
+			c2 = vec.z;
+			break;
+		case Y:
+			c1 = vec.z;
+			c2 = vec.x;
+			break;
+		case Z:
+			c1 = vec.x;
+			c2 = vec.y;
+			break;
+		}
+		if(c2 >= 0) {
+			if(c1 >= 0) {
+				return 1;
+			} else {
+				return 2;
+			}
+		} else {
+			if(c1 <= 0) {
+				return 3;
+			} else {
+				return 4;
+			}
+		}
+	}
 }

@@ -654,12 +654,14 @@ public abstract class AbstractContraptionEntity extends Entity implements IEntit
 	}
 
 	public void disassemble() {
+		disassemble(makeStructureTransform());
+	}
+
+	public void disassemble(StructureTransform transform) {
 		if (!isAlive())
 			return;
 		if (contraption == null)
 			return;
-
-		StructureTransform transform = makeStructureTransform();
 
 		contraption.stop(level());
 		AllPackets.getChannel().send(PacketDistributor.TRACKING_ENTITY.with(() -> this),
@@ -687,7 +689,7 @@ public abstract class AbstractContraptionEntity extends Entity implements IEntit
 		moveCollidedEntitiesOnDisassembly(transform);
 		AllSoundEvents.CONTRAPTION_DISASSEMBLE.playOnServer(level(), blockPosition());
 	}
-
+	
 	private void moveCollidedEntitiesOnDisassembly(StructureTransform transform) {
 		for (Entity entity : collidingEntities.keySet()) {
 			Vec3 localVec = toLocalVector(entity.position(), 0);

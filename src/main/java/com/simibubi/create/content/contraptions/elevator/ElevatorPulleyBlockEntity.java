@@ -74,7 +74,6 @@ public class ElevatorPulleyBlockEntity extends PulleyBlockEntity {
 		if (level.isClientSide())
 			ec.setClientYTarget(worldPosition.getY() - clientOffsetTarget + ec.contactYOffset - 1);
 
-		waitingForSpeedChange = false;
 		ec.arrived = wasArrived;
 
 		if (!arrived)
@@ -316,10 +315,4 @@ public class ElevatorPulleyBlockEntity extends PulleyBlockEntity {
 	public void onSpeedChanged(float previousSpeed) {
 		setChanged();
 	}
-
-	@Override
-	protected MovementMode getMovementMode() {
-		return MovementMode.MOVE_NEVER_PLACE;
-	}
-
 }

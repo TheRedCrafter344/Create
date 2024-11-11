@@ -1,5 +1,7 @@
 package com.simibubi.create.content.contraptions.piston;
 
+import java.util.List;
+
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.content.contraptions.AssemblyException;
@@ -11,8 +13,12 @@ import com.simibubi.create.content.kinetics.base.DirectionalAxisKineticBlock;
 import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.content.kinetics.base.KineticBlock;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueBoxTransform;
+import com.simibubi.create.foundation.blockEntity.behaviour.scrollValue.ScrollOptionBehaviour;
+import com.simibubi.create.foundation.utility.Lang;
 import com.simibubi.create.foundation.utility.ServerSpeedProvider;
+import com.simibubi.create.foundation.utility.VecHelper;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import net.minecraft.core.BlockPos;
@@ -32,8 +38,19 @@ public class MechanicalPistonBlockEntity extends LinearActuatorBlockEntity {
 	protected boolean hadCollisionWithOtherPiston;
 	protected int extensionLength;
 
+	protected ScrollOptionBehaviour<MovementMode> movementMode;
+	
 	public MechanicalPistonBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
+	}
+	
+	@Override
+	public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+		super.addBehaviours(behaviours);
+		movementMode = new ScrollOptionBehaviour<>(MovementMode.class, Lang.translateDirect("contraptions.movement_mode"),
+				this, getMovementModeSlot());
+		behaviours.add(movementMode);
+		registerAwardables(behaviours, AllAdvancements.CONTRAPTION_ACTORS);
 	}
 	
 	@Override
@@ -123,7 +140,16 @@ public class MechanicalPistonBlockEntity extends LinearActuatorBlockEntity {
 	protected void collided() {
 		super.collided();
 		if (!running && getMovementSpeed() > 0)
-			assembleNextTick = true;
+			try {
+				if(assemble() && hasNetwork()) {
+					getOrCreateNetwork().stickEffectiveInertia(getContraptionInertia() * speedMultiplier * speedMultiplier);
+					getOrCreateNetwork().updateEffectiveInertia();
+				}
+				lastException = null;
+			} catch (AssemblyException e) {
+				lastException = e;
+			}
+		sendData();
 	}
 
 	@Override
@@ -166,7 +192,6 @@ public class MechanicalPistonBlockEntity extends LinearActuatorBlockEntity {
 		return position.add(Vec3.atLowerCornerOf(movedContraption.getContraption().anchor));
 	}
 
-	@Override
 	protected ValueBoxTransform getMovementModeSlot() {
 		return new DirectionalExtenderScrollOptionSlot((state, d) -> {
 			Axis axis = d.getAxis();
@@ -196,11 +221,12 @@ public class MechanicalPistonBlockEntity extends LinearActuatorBlockEntity {
 		return totalMass * 0.373f * 0.373f; //radius of piston attachment squared
 	}
 	
-	public static final float GRAVITY = 10; //TODO
-	
 	@Override
 	public float getTorque(float speed) {
-		if(!running || movedContraption == null || movedContraption.isStalled() || wasMaximallyExtended || wasMinimallyExtended) return super.getTorque(speed);
+		if(!running || movedContraption == null || movedContraption.isStalled() || wasCollided
+				|| ((wasMaximallyExtended || wasMinimallyExtended) && getSpeed() != 0)) 
+			return super.getTorque(speed);
+		
 		float totalMass = 0;
 		
 		Direction pistonDir = level.getBlockState(worldPosition).getValue(DirectionalAxisKineticBlock.FACING);
@@ -221,25 +247,17 @@ public class MechanicalPistonBlockEntity extends LinearActuatorBlockEntity {
 			totalMass += mass;
 		}
 		
-		Vec3 gravity = new Vec3(0, -GRAVITY*totalMass, 0); //TODO rotate this in case we are in a rotated grid
-		Vec3 attachmentPoint = getAxisVector(pistonDir.getAxis()).cross(getAxisVector(shaftAxis)).scale(-0.373);
-		Vec3 torqueVec = attachmentPoint.cross(gravity);
+		Vec3 attachmentPoint = VecHelper.getAxisVector(pistonDir.getAxis()).cross(VecHelper.getAxisVector(shaftAxis)).scale(-0.373);
+		Vec3 torqueVec = attachmentPoint.cross(smallG().scale(totalMass));
 		
 		float torque = (float) (shaftAxis == Axis.X ? torqueVec.x :
 								shaftAxis == Axis.Y ? torqueVec.y :
 								shaftAxis == Axis.Z ? torqueVec.z : 0);
 		return super.getTorque(speed) + torque;
 	}
-	
-	private static Vec3 getAxisVector(Axis axis) {
-		switch(axis) {
-		case X:
-			return new Vec3(1, 0, 0);
-		case Y:
-			return new Vec3(0, 1, 0);
-		case Z:
-			return new Vec3(0, 0, 1);
-		}
-		return new Vec3(0, 0, 0);
+
+	@Override
+	protected MovementMode getMovementMode() {
+		return movementMode.get();
 	}
 }

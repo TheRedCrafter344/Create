@@ -12,18 +12,26 @@ import com.simibubi.create.content.contraptions.AssemblyException;
 import com.simibubi.create.content.contraptions.BlockMovementChecks;
 import com.simibubi.create.content.contraptions.ContraptionCollider;
 import com.simibubi.create.content.contraptions.ControlledContraptionEntity;
+import com.simibubi.create.content.contraptions.IControlContraption.MovementMode;
 import com.simibubi.create.content.contraptions.piston.LinearActuatorBlockEntity;
+import com.simibubi.create.content.kinetics.base.DirectionalAxisKineticBlock;
+import com.simibubi.create.content.kinetics.base.HorizontalAxisKineticBlock;
+import com.simibubi.create.content.kinetics.base.KineticBlock;
 import com.simibubi.create.content.redstone.thresholdSwitch.ThresholdSwitchObservable;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.CenteredSideValueBoxTransform;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueBoxTransform;
+import com.simibubi.create.foundation.blockEntity.behaviour.scrollValue.ScrollOptionBehaviour;
 import com.simibubi.create.foundation.utility.Iterate;
+import com.simibubi.create.foundation.utility.Lang;
 import com.simibubi.create.foundation.utility.NBTHelper;
+import com.simibubi.create.foundation.utility.VecHelper;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Direction.Axis;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
@@ -31,6 +39,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.StructureBlockInfo;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.AABB;
@@ -45,10 +54,22 @@ public class PulleyBlockEntity extends LinearActuatorBlockEntity implements Thre
 	protected List<BlockPos> mirrorChildren;
 	public WeakReference<AbstractContraptionEntity> sharedMirrorContraption;
 
+	protected ScrollOptionBehaviour<MovementMode> movementMode;
+	
 	public PulleyBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
 	}
 
+	@Override
+	public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+		super.addBehaviours(behaviours);
+		movementMode = new ScrollOptionBehaviour<>(MovementMode.class, Lang.translateDirect("contraptions.movement_mode"),
+				this, getMovementModeSlot());
+		behaviours.add(movementMode);
+		registerAwardables(behaviours, AllAdvancements.CONTRAPTION_ACTORS);
+		registerAwardables(behaviours, AllAdvancements.PULLEY_MAXED);
+	}
+	
 	@Override
 	protected AABB createRenderBoundingBox() {
 		double expandY = -offset;
@@ -58,12 +79,6 @@ public class PulleyBlockEntity extends LinearActuatorBlockEntity implements Thre
 				expandY = ace.getY() - worldPosition.getY();
 		}
 		return super.createRenderBoundingBox().expandTowards(0, expandY, 0);
-	}
-
-	@Override
-	public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
-		super.addBehaviours(behaviours);
-		registerAwardables(behaviours, AllAdvancements.PULLEY_MAXED);
 	}
 
 	@Override
@@ -104,8 +119,8 @@ public class PulleyBlockEntity extends LinearActuatorBlockEntity implements Thre
 		if (!(level.getBlockState(worldPosition)
 			.getBlock() instanceof PulleyBlock))
 			return false;
-		if (getSpeed() == 0 && mirrorParent == null)
-			return false;
+		//if (getSpeed() == 0 && mirrorParent == null)
+		//	return false;
 		int maxLength = AllConfigs.server().kinetics.maxRopeLength.get();
 		int i = 1;
 		while (i <= maxLength) {
@@ -371,7 +386,6 @@ public class PulleyBlockEntity extends LinearActuatorBlockEntity implements Thre
 		return new Vec3(0, -speed, 0);
 	}
 
-	@Override
 	protected ValueBoxTransform getMovementModeSlot() {
 		return new CenteredSideValueBoxTransform((state, d) -> d == Direction.UP);
 	}
@@ -402,7 +416,52 @@ public class PulleyBlockEntity extends LinearActuatorBlockEntity implements Thre
 
 	@Override
 	public float getContraptionInertia() {
-		// TODO Auto-generated method stub
-		return 0;
+		float totalMass = 0;
+		for(StructureBlockInfo sblock : movedContraption.getContraption().getBlocks().values()) {
+			float mass = 60; //TODO
+			if(sblock.state().getBlock() instanceof KineticBlock) {
+				mass = 6 * AllConfigs.server().kinetics.getInertia((KineticBlock) sblock.state().getBlock());
+			}
+			totalMass += mass;
+		}
+		return totalMass * 0.373f * 0.373f; //radius of piston attachment squared
+	}
+
+	@Override
+	public float getTorque(float speed) {
+		if(!running || movedContraption == null || movedContraption.isStalled() || wasCollided
+				|| ((wasMaximallyExtended || wasMinimallyExtended) && getSpeed() != 0 && !isPassive())) 
+			return super.getTorque(speed);
+		
+		float totalMass = 0;
+		
+		Direction pistonDir = Direction.DOWN;
+		Axis shaftAxis = level.getBlockState(worldPosition).getValue(HorizontalAxisKineticBlock.HORIZONTAL_AXIS);
+		
+		for(StructureBlockInfo sblock : movedContraption.getContraption().getBlocks().values()) {
+			float mass = 60; //TODO
+			if(sblock.state().getBlock() instanceof KineticBlock) {
+				mass = 6 * AllConfigs.server().kinetics.getInertia((KineticBlock) sblock.state().getBlock());
+			}
+			totalMass += mass;
+		}
+		
+		Vec3 attachmentPoint = VecHelper.getAxisVector(pistonDir.getAxis()).cross(VecHelper.getAxisVector(shaftAxis)).scale(-0.373);
+		Vec3 torqueVec = attachmentPoint.cross(smallG().scale(totalMass));
+		
+		float torque = (float) (shaftAxis == Axis.X ? torqueVec.x :
+								shaftAxis == Axis.Y ? torqueVec.y :
+								shaftAxis == Axis.Z ? torqueVec.z : 0);
+		return super.getTorque(speed) + torque;
+	}
+	
+	@Override
+	protected MovementMode getMovementMode() {
+		return movementMode.get();
+	}
+	
+	@Override
+	public boolean pullsEnergyFromNetwork() {
+		return getMovementSpeed() < 0;
 	}
 }

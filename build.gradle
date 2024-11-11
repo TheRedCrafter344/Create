@@ -133,9 +133,30 @@ repositories {
             includeGroup "maven.modrinth"
         }
     }
-
-    mavenCentral()
-    mavenLocal()
+	
+	mavenCentral()
+	mavenLocal()
+	
+	
+	
+	maven {
+		name = 'Kotlin for Forge'
+        url = 'https://thedarkcolour.github.io/KotlinForForge/'
+	}
+	
+	maven {
+		name = "Valkyrien Skies Internal"
+		url = "https://maven.valkyrienskies.org"
+		content {
+		//	includeGroup "org.valkyrienskies"
+		//	includeGroup "org.valkyrienskies.core"
+			excludeGroup "org.spongepowered"
+			excludeGroup "thedarkcolour"
+			excludeGroup "net.jodah"
+			//THIS REPO REEKS
+		}
+	}
+	
     flatDir {
         dirs 'libs'
     }
@@ -162,7 +183,7 @@ dependencies {
 
     compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:${curios_version}+${curios_minecraft_version}:api")
     runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:${curios_version}+${curios_minecraft_version}")
-
+    
 	if (cc_tweaked_enable.toBoolean()) {
 	    compileOnly("cc.tweaked:cc-tweaked-${cc_tweaked_minecraft_version}-core-api:${cc_tweaked_version}")
         compileOnly fg.deobf("cc.tweaked:cc-tweaked-${cc_tweaked_minecraft_version}-forge-api:${cc_tweaked_version}")
@@ -215,6 +236,23 @@ dependencies {
     if (!Boolean.getBoolean('idea.sync.active')) {
         annotationProcessor "org.spongepowered:mixin:${mixin_version}:processor"
     }
+    
+    //
+  	//implementation fg.deobf("org.valkyrienskies:valkyrienskies-${rootProject.vs2_mc_version}-common:${rootProject.vs2_version}")
+  
+ 	compileOnly "org.valkyrienskies.core:api:${rootProject.vs_core_version}"
+	compileOnly "org.valkyrienskies.core:api-game:${rootProject.vs_core_version}"
+ 	compileOnly "org.valkyrienskies.core:util:${rootProject.vs_core_version}"
+ 	compileOnly "org.valkyrienskies.core:impl:${rootProject.vs_core_version}"
+ 	
+ 	implementation fg.deobf("org.valkyrienskies:valkyrienskies-${rootProject.vs2_mc_version}-forge:${rootProject.vs2_version}")
+	
+	implementation "org.joml:joml:1.10.5"
+	
+	implementation 'thedarkcolour:kotlinforforge:4.10.0'
+	
+	//
+    
 }
 
 sourceSets.main.java {

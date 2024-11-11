@@ -17,13 +17,15 @@ public interface IControlContraption {
 	public boolean isValid();
 	
 	public BlockPos getBlockPosition();
-
+	
 	static enum MovementMode implements INamedIconOptions {
 
 		MOVE_PLACE(AllIcons.I_MOVE_PLACE),
 		MOVE_PLACE_RETURNED(AllIcons.I_MOVE_PLACE_RETURNED),
-		MOVE_NEVER_PLACE(AllIcons.I_MOVE_NEVER_PLACE),
-
+		MOVE_PLACE_STATIC(AllIcons.I_MOVE_PLACE),
+		MOVE_PLACE_STATIC_RETURNED(AllIcons.I_MOVE_PLACE_RETURNED),
+		MOVE_NEVER_PLACE(AllIcons.I_MOVE_NEVER_PLACE)
+		
 		;
 
 		private String translationKey;
@@ -50,6 +52,8 @@ public interface IControlContraption {
 
 		ROTATE_PLACE(AllIcons.I_ROTATE_PLACE),
 		ROTATE_PLACE_RETURNED(AllIcons.I_ROTATE_PLACE_RETURNED),
+		ROTATE_PLACE_STATIC(AllIcons.I_ROTATE_PLACE),
+		ROTATE_PLACE_STATIC_RETURNED(AllIcons.I_ROTATE_PLACE_RETURNED),
 		ROTATE_NEVER_PLACE(AllIcons.I_ROTATE_NEVER_PLACE),
 
 		;

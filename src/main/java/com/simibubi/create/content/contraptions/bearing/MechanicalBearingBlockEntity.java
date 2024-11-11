@@ -3,16 +3,19 @@ package com.simibubi.create.content.contraptions.bearing;
 import java.util.List;
 
 import com.simibubi.create.AllSoundEvents;
+import com.simibubi.create.Create;
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.content.contraptions.AssemblyException;
 import com.simibubi.create.content.contraptions.ControlledContraptionEntity;
 import com.simibubi.create.content.contraptions.IDisplayAssemblyExceptions;
 import com.simibubi.create.content.contraptions.IProvideActorEnergy;
+import com.simibubi.create.content.contraptions.StructureTransform;
 import com.simibubi.create.content.kinetics.KineticNetwork;
 import com.simibubi.create.content.kinetics.base.KineticBlock;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import com.simibubi.create.foundation.blockEntity.behaviour.scrollValue.ScrollOptionBehaviour;
 import com.simibubi.create.foundation.item.TooltipHelper;
 import com.simibubi.create.foundation.utility.AngleHelper;
 import com.simibubi.create.foundation.utility.Lang;
@@ -26,6 +29,8 @@ import net.minecraft.core.Direction.Axis;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -35,6 +40,8 @@ import net.minecraft.world.phys.Vec3;
 public class MechanicalBearingBlockEntity extends KineticBlockEntity
 	implements IBearingBlockEntity, IDisplayAssemblyExceptions, IProvideActorEnergy {
 
+	protected ScrollOptionBehaviour<RotationMode> movementMode;
+	
 	protected ControlledContraptionEntity movedContraption;
 	protected float angle;
 	protected boolean running;
@@ -48,6 +55,8 @@ public class MechanicalBearingBlockEntity extends KineticBlockEntity
 	private boolean wasStalled = false;
 	
 	private float storedEnergy = 0;
+	
+	private byte ticksAtZeroSpeed = 0;
 	
 	public MechanicalBearingBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
@@ -68,6 +77,8 @@ public class MechanicalBearingBlockEntity extends KineticBlockEntity
 	@Override
 	public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
 		super.addBehaviours(behaviours);
+		movementMode = new ScrollOptionBehaviour<>(RotationMode.class, Lang.translateDirect("contraptions.movement_mode"), this, getMovementModeSlot());
+		behaviours.add(movementMode);
 		registerAwardables(behaviours, AllAdvancements.CONTRAPTION_ACTORS);
 	}
 
@@ -135,6 +146,12 @@ public class MechanicalBearingBlockEntity extends KineticBlockEntity
 			if (!movedContraption.isStalled()) {
 				angle = Math.round(angle);
 				applyRotation();
+				if(movementMode.get() == RotationMode.ROTATE_PLACE
+						|| movementMode.get() == RotationMode.ROTATE_PLACE_RETURNED && isNearInitialAngle()) {
+					movedContraption.getContraption().stop(level);
+					disassemble();
+					return;
+				}
 			}
 			movedContraption.getContraption()
 				.stop(level);
@@ -143,6 +160,10 @@ public class MechanicalBearingBlockEntity extends KineticBlockEntity
 		//if (!isWindmill() && sequenceContext != null
 		//	&& sequenceContext.instruction() == SequencerInstructions.TURN_ANGLE)
 		//	sequencedAngleLimit = sequenceContext.getEffectiveValue(getTheoreticalSpeed());
+	}
+
+	public boolean isNearInitialAngle() {
+		return Math.abs(angle) < 10 || Math.abs(angle) > 360 - 10; //TODO make config option
 	}
 
 	public float getAngularSpeed() {
@@ -217,15 +238,70 @@ public class MechanicalBearingBlockEntity extends KineticBlockEntity
 	public void disassemble() {
 		if (!running && movedContraption == null)
 			return;
-		angle = 0;
-		sequencedAngleLimit = -1;
+		
 		if (isWindmill())
 			applyRotation();
+		
 		if (movedContraption != null) {
-			movedContraption.disassemble();
+			
+			Axis axis = movedContraption.getRotationAxis();
+			
+			//dissassembles at the position with lower potential energy to prevent infinite energy hack 100% real
+			//only use that logic if gravity is relevant, and if the angle isnt too close to a disassembly position
+			while(angle < 0) angle += 360;
+			while(angle > 360) angle -= 360;
+			if(VecHelper.getAxisVector(axis).cross(smallG()).lengthSqr() > 0.001 &&
+					90 - (angle % 90) > 1 && angle % 90 > 1) {
+				Vec3 sDiff = null;
+				int quadrant = VecHelper.getQuadrant(centerOfMass(), axis);
+				switch(quadrant) {
+				case 1:
+					sDiff =
+					axis == Axis.X ? new Vec3(0, -1, 1) :
+					axis == Axis.Y ? new Vec3(1, 0, -1) :
+									 new Vec3(-1, 1, 0);
+					break;
+				case 2:
+					sDiff =
+					axis == Axis.X ? new Vec3(0, -1, -1) :
+					axis == Axis.Y ? new Vec3(-1, 0, -1) :
+									 new Vec3(-1, -1, 0);
+					break;
+				case 3:
+					sDiff =
+					axis == Axis.X ? new Vec3(0, 1, -1) :
+					axis == Axis.Y ? new Vec3(-1, 0, 1) :
+									 new Vec3(1, -1, 0);
+					break;
+				case 4:
+					sDiff =
+					axis == Axis.X ? new Vec3(0, 1, 1) :
+					axis == Axis.Y ? new Vec3(1, 0, 1) :
+									 new Vec3(1, 1, 0);
+					break;
+				}
+				if(sDiff != null && sDiff.dot(smallG()) != 0) {
+					boolean useCeilAngle = sDiff.dot(smallG()) > 0;
+					angle = (int)angle / 90 + (useCeilAngle ? 1 : 0);
+					Rotation rot =
+							angle == 1 ? Rotation.COUNTERCLOCKWISE_90 :
+							angle == 2 ? Rotation.CLOCKWISE_180 :
+							angle == 3 ? Rotation.CLOCKWISE_90 :
+							Rotation.NONE;
+					BlockPos offset = BlockPos.containing(movedContraption.getAnchorVec().add(.5, .5, .5));
+					StructureTransform transform = new StructureTransform(offset, axis, rot, Mirror.NONE);
+					movedContraption.disassemble(transform);
+				} else {
+					movedContraption.disassemble();
+				}
+			} else {
+				movedContraption.disassemble();
+			}
 			AllSoundEvents.CONTRAPTION_DISASSEMBLE.playOnServer(level, worldPosition);
 		}
-
+		
+		angle = 0;
+		sequencedAngleLimit = -1;
 		movedContraption = null;
 		running = false;
 		if(hasNetwork()) getOrCreateNetwork().updateEffectiveInertia();
@@ -237,6 +313,20 @@ public class MechanicalBearingBlockEntity extends KineticBlockEntity
 	public void tick() {
 		super.tick();
 
+		if(running && Math.abs(getSpeed()) < 0.01f && !(movedContraption != null && movedContraption.isStalled())) {
+			if(movementMode.get() == RotationMode.ROTATE_PLACE_STATIC
+					|| movementMode.get() == RotationMode.ROTATE_PLACE_STATIC_RETURNED && isNearInitialAngle()) {
+				if(ticksAtZeroSpeed >= 5) { //TODO config
+					if(movedContraption != null) movedContraption.getContraption().stop(level);
+					disassemble();
+					return;
+				}
+				ticksAtZeroSpeed++;
+			}
+		} else {
+			ticksAtZeroSpeed = 0;
+		}
+		
 		prevAngle = angle;
 		if (level.isClientSide)
 			clientAngleDiff /= 2;
@@ -342,7 +432,30 @@ public class MechanicalBearingBlockEntity extends KineticBlockEntity
 		return inertia;
 	}
 	
-	public static final float GRAVITY = 10; //TODO
+	public Vec3 smallG() {
+		return new Vec3(0, -10, 0); //TODO rotate this if we are on rotated grid
+	}
+	
+	public Vec3 centerOfMass() {
+		if(!running || movedContraption == null) return null;
+		float totalMass = 0;
+		float comX = 0, comY = 0, comZ = 0;
+		Axis axis = movedContraption.getRotationAxis();
+		for(StructureBlockInfo sblock : movedContraption.getContraption().getBlocks().values()) {
+			float mass = 60; //TODO
+			if(sblock.state().getBlock() instanceof KineticBlock) {
+				mass = 6 * AllConfigs.server().kinetics.getInertia((KineticBlock) sblock.state().getBlock());
+			}
+			comX += sblock.pos().getX() * mass;
+			comY += sblock.pos().getY() * mass;
+			comZ += sblock.pos().getZ() * mass;
+			totalMass += mass;
+		}
+		comX /= totalMass;
+		comY /= totalMass;
+		comZ /= totalMass;
+		return VecHelper.rotate(new Vec3(comX, comY, comZ), angle, axis);
+	}
 	
 	@Override
 	public float getTorque(float speed) {
@@ -364,7 +477,7 @@ public class MechanicalBearingBlockEntity extends KineticBlockEntity
 		comY /= totalMass;
 		comZ /= totalMass;
 		Vec3 com = VecHelper.rotate(new Vec3(comX, comY, comZ), angle, axis);
-		Vec3 gravity = new Vec3(0, -GRAVITY * totalMass, 0); //TODO rotate this in case we are in a rotated grid
+		Vec3 gravity = smallG().scale(totalMass);
 		Vec3 torqueVec = com.cross(gravity);
 		float torque = (float) (axis == Axis.X ? torqueVec.x :
 								axis == Axis.Y ? torqueVec.y :
